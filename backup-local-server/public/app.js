@@ -5,10 +5,7 @@ const defaultIncludeClasses = storedPreference === null
   ? params.get("includeClasses") !== "false"
   : storedPreference === "true";
 const isFileProtocol = window.location.protocol === "file:";
-const isLocalServer = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-const dataMode = isFileProtocol ? "preview" : (isLocalServer ? "server" : "static");
-const apiOrigin = isLocalServer ? window.location.origin : "http://localhost:8080";
-const assetBase = window.location.href;
+const apiOrigin = isFileProtocol ? "http://localhost:8080" : window.location.origin;
 const fullscreenThemeStorageKey = "fullscreenTheme";
 
 const state = {
@@ -29,8 +26,7 @@ const pageCounter = document.querySelector("#pageCounter");
 const sourceStatus = document.querySelector("#sourceStatus");
 const eventsGrid = document.querySelector("#eventsGrid");
 const template = document.querySelector("#eventCardTemplate");
-const fullscreenLink = document.querySelector("#fullscreenLink");
-const fullscreenAllLink = document.querySelector("#fullscreenAllLink");
+const fullscreenLink = document.querySelector(".button-link");
 const themeOptions = document.querySelector("#themeOptions");
 
 const fullscreenThemes = [
@@ -75,14 +71,6 @@ function buildApiUrl(force = false) {
   return apiUrl.toString();
 }
 
-function buildStaticDataUrl(force = false) {
-  const dataUrl = new URL("./events.json", window.location.href);
-  if (force) {
-    dataUrl.searchParams.set("_", Date.now().toString());
-  }
-  return dataUrl.toString();
-}
-
 function normalizeAssetUrl(value) {
   if (!value) {
     return null;
@@ -92,7 +80,7 @@ function normalizeAssetUrl(value) {
     return value;
   }
 
-  return new URL(value, assetBase).toString();
+  return new URL(value, apiOrigin).toString();
 }
 
 function formatRefreshTime(value) {
@@ -334,23 +322,17 @@ function renderThemeOptions() {
 }
 
 function updateFullscreenLink() {
-  const eventsOnlyUrl = new URL("./fullscreen.html", window.location.href);
-  eventsOnlyUrl.searchParams.set("includeClasses", "false");
-  eventsOnlyUrl.searchParams.set("theme", state.fullscreenTheme);
-  fullscreenLink.href = eventsOnlyUrl.toString();
-
-  const allItemsUrl = new URL("./fullscreen.html", window.location.href);
-  allItemsUrl.searchParams.set("includeClasses", "true");
-  allItemsUrl.searchParams.set("theme", state.fullscreenTheme);
-  fullscreenAllLink.href = allItemsUrl.toString();
+  const url = new URL("./fullscreen.html", window.location.href);
+  url.searchParams.set("includeClasses", "false");
+  url.searchParams.set("theme", state.fullscreenTheme);
+  fullscreenLink.href = url.toString();
 }
 
 function renderPayload(payload, sourceLabel) {
-  const payloadItems = Array.isArray(payload.items) ? payload.items : [];
-  state.items = payloadItems.filter((item) => state.includeClasses || !item.isClass);
+  state.items = payload.items || [];
 
   updatedAt.textContent = formatRefreshTime(payload.fetchedAt || new Date().toISOString());
-  eventCount.textContent = String(state.items.length);
+  eventCount.textContent = String(payload.total || 0);
   sourceStatus.textContent = sourceLabel;
 
   renderPage();
@@ -412,14 +394,11 @@ async function loadEvents(force = false) {
   sourceStatus.textContent = force ? "Refreshing event data..." : "Loading event data...";
 
   try {
-    if (dataMode === "preview") {
+    if (isFileProtocol) {
       throw new Error("Direct file mode");
     }
 
-    const response = await fetch(
-      dataMode === "server" ? buildApiUrl(force) : buildStaticDataUrl(force),
-      { cache: "no-store" }
-    );
+    const response = await fetch(buildApiUrl(force), { cache: "no-store" });
     if (!response.ok) {
       let message = `Request failed with ${response.status}`;
       try {
@@ -434,19 +413,16 @@ async function loadEvents(force = false) {
     }
 
     const payload = await response.json();
-    renderPayload(
-      payload,
-      dataMode === "static"
-        ? (payload.sourceUrl ? `Published from ${new URL(payload.sourceUrl).host}` : "Published site data")
-        : (payload.sourceUrl ? `Live from ${new URL(payload.sourceUrl).host}` : "Live data loaded")
-    );
+    renderPayload(payload, payload.sourceUrl
+      ? `Live from ${new URL(payload.sourceUrl).host}`
+      : "Live data loaded");
   } catch (error) {
     const fallbackItems = getFallbackItems().filter((item) => state.includeClasses || !item.isClass);
     renderPayload({
       fetchedAt: null,
       total: fallbackItems.length,
       items: fallbackItems
-    }, dataMode === "preview"
+    }, isFileProtocol
       ? "Preview data loaded from local file"
       : `Live feed unavailable (${error.message}), showing preview data`);
   }

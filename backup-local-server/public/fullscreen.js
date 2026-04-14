@@ -1,11 +1,8 @@
 const params = new URLSearchParams(window.location.search);
 const isFileProtocol = window.location.protocol === "file:";
-const isLocalServer = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-const dataMode = isFileProtocol ? "preview" : (isLocalServer ? "server" : "static");
 const includeClasses = params.get("includeClasses") === "true";
 const slideDelayMs = Math.max(5000, Number.parseInt(params.get("delay") || "15000", 10) || 15000);
-const apiOrigin = isLocalServer ? window.location.origin : "http://localhost:8080";
-const assetBase = window.location.href;
+const apiOrigin = isFileProtocol ? "http://localhost:8080" : window.location.origin;
 const fullscreenThemeStorageKey = "fullscreenTheme";
 const fullscreenTheme = params.get("theme") || localStorage.getItem(fullscreenThemeStorageKey) || "heritage";
 
@@ -39,14 +36,6 @@ function buildApiUrl(force = false) {
   return apiUrl.toString();
 }
 
-function buildStaticDataUrl(force = false) {
-  const dataUrl = new URL("./events.json", window.location.href);
-  if (force) {
-    dataUrl.searchParams.set("_", Date.now().toString());
-  }
-  return dataUrl.toString();
-}
-
 function normalizeAssetUrl(value) {
   if (!value) {
     return null;
@@ -56,7 +45,7 @@ function normalizeAssetUrl(value) {
     return value;
   }
 
-  return new URL(value, assetBase).toString();
+  return new URL(value, apiOrigin).toString();
 }
 
 function normalizeDisplayText(value) {
@@ -249,22 +238,18 @@ function startRotation() {
 }
 
 function renderPayload(payload, sourceLabel) {
-  const payloadItems = Array.isArray(payload.items) ? payload.items : [];
-  state.items = payloadItems.filter((item) => includeClasses || !item.isClass);
+  state.items = payload.items || [];
   renderSlide(0);
   startRotation();
 }
 
 async function loadEvents(force = false) {
   try {
-    if (dataMode === "preview") {
+    if (isFileProtocol) {
       throw new Error("Direct file mode");
     }
 
-    const response = await fetch(
-      dataMode === "server" ? buildApiUrl(force) : buildStaticDataUrl(force),
-      { cache: "no-store" }
-    );
+    const response = await fetch(buildApiUrl(force), { cache: "no-store" });
     if (!response.ok) {
       throw new Error(`Request failed with ${response.status}`);
     }
@@ -277,7 +262,7 @@ async function loadEvents(force = false) {
     renderPayload({
       fetchedAt: null,
       items: getFallbackItems()
-    }, dataMode === "preview"
+    }, isFileProtocol
       ? "Preview data loaded from local file"
       : `Live feed unavailable (${error.message}), showing preview data`);
   }
