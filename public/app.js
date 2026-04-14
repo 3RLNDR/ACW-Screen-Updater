@@ -31,6 +31,7 @@ const eventsGrid = document.querySelector("#eventsGrid");
 const template = document.querySelector("#eventCardTemplate");
 const fullscreenLink = document.querySelector("#fullscreenLink");
 const fullscreenAllLink = document.querySelector("#fullscreenAllLink");
+const fullscreenUrlDisplay = document.querySelector("#fullscreenUrlDisplay");
 const themeOptions = document.querySelector("#themeOptions");
 
 const fullscreenThemes = [
@@ -338,6 +339,8 @@ function updateFullscreenLink() {
   eventsOnlyUrl.searchParams.set("includeClasses", "false");
   eventsOnlyUrl.searchParams.set("theme", state.fullscreenTheme);
   fullscreenLink.href = eventsOnlyUrl.toString();
+  fullscreenUrlDisplay.href = eventsOnlyUrl.toString();
+  fullscreenUrlDisplay.textContent = eventsOnlyUrl.toString();
 
   const allItemsUrl = new URL("./fullscreen.html", window.location.href);
   allItemsUrl.searchParams.set("includeClasses", "true");

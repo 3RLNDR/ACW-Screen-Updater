@@ -171,6 +171,27 @@ button {
   flex-wrap: wrap;
 }
 
+.hosted-links {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: min(30rem, 100%);
+}
+
+.hosted-links-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.hosted-link {
+  color: var(--brand-deep);
+  text-decoration: none;
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
 .theme-picker-label {
   font-size: 0.9rem;
   color: var(--muted);
