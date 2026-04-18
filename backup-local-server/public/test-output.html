@@ -6,163 +6,46 @@
   <title>ACW Screen Test Output</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
-<body class="preview-body">
-  <main class="screen">
-    <section class="hero">
-      <div>
-        <p class="eyebrow">Arts Centre Washington</p>
-        <h1>Upcoming events</h1>
-        <p class="subcopy">Test output preview using built-in sample artwork and a more polished screen layout. This mirrors the TV display without depending on external images.</p>
-      </div>
-      <div class="status-panel">
-        <div>
-          <span class="status-label">Display mode</span>
-          <strong>Events only</strong>
-        </div>
-        <div>
-          <span class="status-label">Last refreshed</span>
-          <strong>14 Apr 2026, 10:30</strong>
-        </div>
-        <div>
-          <span class="status-label">Events shown</span>
-          <strong>6</strong>
-        </div>
-      </div>
-    </section>
-
-    <section class="controls" aria-label="Preview note">
-      <span>This is a static preview file with self-contained visuals.</span>
-      <span class="hint"><strong>Next step:</strong> open the live version later at <code>http://localhost:8080/</code>.</span>
-    </section>
-
-    <section class="board">
-      <div class="page-meta">
-        <div>Page 1 of 1</div>
-        <div>Sample preview data</div>
+<body class="fullscreen-body" data-display-mode="preview">
+  <div id="keepAlivePulse" hidden aria-hidden="true"></div>
+  <video
+    id="keepAliveVideo"
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="auto"
+    aria-hidden="true"
+    style="position:fixed;left:0;top:0;width:1px;height:1px;opacity:0.01;pointer-events:none;z-index:-1;"
+  ></video>
+  <main class="fullscreen-screen">
+    <section class="fullscreen-stage">
+      <div class="fullscreen-media">
+        <img id="slideImage" class="fullscreen-image" alt="" hidden>
+        <div id="slidePoster" class="fullscreen-poster"></div>
+        <div id="slideCategory" class="fullscreen-category"></div>
       </div>
 
-      <div class="events-grid">
-        <article class="event-card">
-          <div class="event-image-wrap">
-            <div class="event-poster poster-theatre">
-              <div class="event-poster-copy">
-                <div class="event-kicker">Stage</div>
-                <h3 class="event-poster-title">Wired</h3>
-                <div class="event-poster-meta">Immersive family theatre</div>
-              </div>
-            </div>
-            <div class="event-category">Theatre and Performance</div>
-          </div>
-          <div class="event-body">
-            <div class="event-status is-muted">Upcoming event</div>
-            <h2 class="event-title">Wired</h2>
-            <p class="event-date">16 Apr 2026</p>
-            <p class="event-meta">Suitable for ages 11+</p>
-            <a class="event-link" target="_blank" rel="noreferrer" href="https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/">View event</a>
-          </div>
-        </article>
+      <div class="fullscreen-content">
+        <div class="fullscreen-topline">
+          <span class="fullscreen-venue">Arts Centre Washington</span>
+          <span id="slideCounter" class="fullscreen-counter">1 / 1</span>
+        </div>
 
-        <article class="event-card">
-          <div class="event-image-wrap">
-            <div class="event-poster poster-music">
-              <div class="event-poster-copy">
-                <div class="event-kicker">Live</div>
-                <h3 class="event-poster-title">10CCLO</h3>
-                <div class="event-poster-meta">Orchestral pop night</div>
-              </div>
-            </div>
-            <div class="event-category">Music</div>
-          </div>
-          <div class="event-body">
-            <div class="event-status">Limited Availability</div>
-            <h2 class="event-title">10CCLO</h2>
-            <p class="event-date">17 - 18 Apr 2026</p>
-            <p class="event-meta">Live music performance</p>
-            <a class="event-link" target="_blank" rel="noreferrer" href="https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/">View event</a>
-          </div>
-        </article>
+        <div class="fullscreen-copy">
+          <div id="slideAvailability" class="fullscreen-availability" hidden></div>
+          <h1 id="slideTitle" class="fullscreen-title">Loading events</h1>
+          <p id="slideDate" class="fullscreen-date">Please wait while the display loads.</p>
+          <div id="slideDetails" class="fullscreen-details"></div>
+        </div>
 
-        <article class="event-card">
-          <div class="event-image-wrap">
-            <div class="event-poster poster-comedy">
-              <div class="event-poster-copy">
-                <div class="event-kicker">Comedy</div>
-                <h3 class="event-poster-title">Patrick Monahan</h3>
-                <div class="event-poster-meta">Headline stand-up set</div>
-              </div>
-            </div>
-            <div class="event-category">Comedy</div>
-          </div>
-          <div class="event-body">
-            <div class="event-status is-muted">Upcoming event</div>
-            <h2 class="event-title">Patrick Monahan - The Good, The Pat &amp; The Ugly</h2>
-            <p class="event-date">24 Apr 2026</p>
-            <p class="event-meta">Stand-up comedy night</p>
-            <a class="event-link" target="_blank" rel="noreferrer" href="https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/">View event</a>
-          </div>
-        </article>
-
-        <article class="event-card">
-          <div class="event-image-wrap">
-            <div class="event-poster poster-film">
-              <div class="event-poster-copy">
-                <div class="event-kicker">Screen</div>
-                <h3 class="event-poster-title">Purple Rain</h3>
-                <div class="event-poster-meta">Rock docs screening</div>
-              </div>
-            </div>
-            <div class="event-category">Films</div>
-          </div>
-          <div class="event-body">
-            <div class="event-status is-muted">Upcoming event</div>
-            <h2 class="event-title">Mr Drayton's Rock Docs: Purple Rain</h2>
-            <p class="event-date">22 Apr 2026</p>
-            <p class="event-meta">Film screening</p>
-            <a class="event-link" target="_blank" rel="noreferrer" href="https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/">View event</a>
-          </div>
-        </article>
-
-        <article class="event-card">
-          <div class="event-image-wrap">
-            <div class="event-poster poster-exhibition">
-              <div class="event-poster-copy">
-                <div class="event-kicker">Gallery</div>
-                <h3 class="event-poster-title">Present Imperfect</h3>
-                <div class="event-poster-meta">Contemporary exhibition</div>
-              </div>
-            </div>
-            <div class="event-category">Exhibitions</div>
-          </div>
-          <div class="event-body">
-            <div class="event-status">Free</div>
-            <h2 class="event-title">Present Continuous, Present Imperfect</h2>
-            <p class="event-date">15 - 25 Apr 2026</p>
-            <p class="event-meta">Gallery exhibition</p>
-            <a class="event-link" target="_blank" rel="noreferrer" href="https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/">View event</a>
-          </div>
-        </article>
-
-        <article class="event-card">
-          <div class="event-image-wrap">
-            <div class="event-poster poster-special">
-              <div class="event-poster-copy">
-                <div class="event-kicker">Seasonal</div>
-                <h3 class="event-poster-title">Makers Fair</h3>
-                <div class="event-poster-meta">Crafts, stalls and visitors</div>
-              </div>
-            </div>
-            <div class="event-category">Special Events</div>
-          </div>
-          <div class="event-body">
-            <div class="event-status">Free</div>
-            <h2 class="event-title">Summer Craft &amp; Makers Fair</h2>
-            <p class="event-date">18 Jul 2026</p>
-            <p class="event-meta">Venue-wide special event</p>
-            <a class="event-link" target="_blank" rel="noreferrer" href="https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/">View event</a>
-          </div>
-        </article>
+        <div id="slideProgress" class="fullscreen-progress" aria-hidden="true">
+          <div id="slideProgressBar" class="fullscreen-progress-bar"></div>
+        </div>
       </div>
     </section>
   </main>
+
+  <script src="./fullscreen.js"></script>
 </body>
 </html>

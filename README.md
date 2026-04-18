@@ -77,6 +77,8 @@ The page refreshes data every 5 minutes and also supports manual refresh.
 
 The default slide delay is 15 seconds, with a minimum allowed delay of 5 seconds.
 
+`public/test-output.html` is the static preview companion for layout checks and should be updated alongside visible UI changes to the live display.
+
 ## URL options
 
 The frontend supports a few useful query-string options:

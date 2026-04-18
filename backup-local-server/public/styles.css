@@ -171,6 +171,27 @@ button {
   flex-wrap: wrap;
 }
 
+.hosted-links {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: min(30rem, 100%);
+}
+
+.hosted-links-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.hosted-link {
+  color: var(--brand-deep);
+  text-decoration: none;
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
 .theme-picker-label {
   font-size: 0.9rem;
   color: var(--muted);
@@ -376,6 +397,21 @@ code {
   align-content: start;
 }
 
+.event-progress {
+  width: 100%;
+  height: 0.32rem;
+  margin-top: 0.3rem;
+  border-radius: 999px;
+  background: rgba(28, 37, 34, 0.12);
+  overflow: hidden;
+}
+
+.event-progress-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--brand), #f0cfbb);
+}
+
 .event-status {
   min-height: 1.2rem;
   color: var(--brand-deep);
@@ -571,7 +607,7 @@ code {
 .fullscreen-content {
   padding: 2rem 2.1rem;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto 1fr auto;
   gap: 1.8rem;
 }
 
@@ -596,6 +632,25 @@ code {
   display: grid;
   align-content: center;
   gap: 1rem;
+  min-height: 0;
+}
+
+.fullscreen-progress {
+  width: 100%;
+  align-self: end;
+  height: 0.7rem;
+  border-radius: 999px;
+  background: rgba(28, 37, 34, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(28, 37, 34, 0.08);
+  overflow: hidden;
+}
+
+.fullscreen-progress-bar {
+  width: 2%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--fs-pill-bg), #f1c27a);
+  box-shadow: 0 0 18px rgba(177, 75, 45, 0.22);
 }
 
 .fullscreen-details {

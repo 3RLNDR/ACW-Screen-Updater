@@ -7,6 +7,17 @@
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body class="fullscreen-body">
+  <div id="keepAlivePulse" hidden aria-hidden="true"></div>
+  <video
+    id="keepAliveVideo"
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="auto"
+    aria-hidden="true"
+    style="position:fixed;left:0;top:0;width:1px;height:1px;opacity:0.01;pointer-events:none;z-index:-1;"
+  ></video>
   <main class="fullscreen-screen">
     <section class="fullscreen-stage">
       <div class="fullscreen-media">
@@ -26,6 +37,10 @@
           <h1 id="slideTitle" class="fullscreen-title">Loading events</h1>
           <p id="slideDate" class="fullscreen-date">Please wait while the display loads.</p>
           <div id="slideDetails" class="fullscreen-details"></div>
+        </div>
+
+        <div id="slideProgress" class="fullscreen-progress" aria-hidden="true">
+          <div id="slideProgressBar" class="fullscreen-progress-bar"></div>
         </div>
       </div>
     </section>

@@ -1,8 +1,13 @@
 const params = new URLSearchParams(window.location.search);
 const isFileProtocol = window.location.protocol === "file:";
+const isLocalServer = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const forcedDataMode = document.body.dataset.displayMode;
+const dataMode = forcedDataMode || (isFileProtocol ? "preview" : (isLocalServer ? "server" : "static"));
 const includeClasses = params.get("includeClasses") === "true";
 const slideDelayMs = Math.max(5000, Number.parseInt(params.get("delay") || "15000", 10) || 15000);
-const apiOrigin = isFileProtocol ? "http://localhost:8080" : window.location.origin;
+const keepAliveMs = Math.max(15000, Number.parseInt(params.get("keepAliveMs") || "30000", 10) || 30000);
+const apiOrigin = isLocalServer ? window.location.origin : "http://localhost:8080";
+const assetBase = window.location.href;
 const fullscreenThemeStorageKey = "fullscreenTheme";
 const fullscreenTheme = params.get("theme") || localStorage.getItem(fullscreenThemeStorageKey) || "heritage";
 
@@ -13,7 +18,10 @@ const state = {
   items: [],
   currentIndex: 0,
   rotateTimer: null,
-  refreshTimer: null
+  refreshTimer: null,
+  keepAliveTimer: null,
+  progressTimer: null,
+  progressStartedAt: 0
 };
 
 const refreshMs = 5 * 60 * 1000;
@@ -26,6 +34,10 @@ const slideCounter = document.querySelector("#slideCounter");
 const slideTitle = document.querySelector("#slideTitle");
 const slideDate = document.querySelector("#slideDate");
 const slideDetails = document.querySelector("#slideDetails");
+const slideProgress = document.querySelector("#slideProgress");
+const slideProgressBar = document.querySelector("#slideProgressBar");
+const keepAlivePulse = document.querySelector("#keepAlivePulse");
+const keepAliveVideo = document.querySelector("#keepAliveVideo");
 
 function buildApiUrl(force = false) {
   const apiUrl = new URL("/api/events", apiOrigin);
@@ -34,6 +46,14 @@ function buildApiUrl(force = false) {
     apiUrl.searchParams.set("_", Date.now().toString());
   }
   return apiUrl.toString();
+}
+
+function buildStaticDataUrl(force = false) {
+  const dataUrl = new URL("./events.json", window.location.href);
+  if (force) {
+    dataUrl.searchParams.set("_", Date.now().toString());
+  }
+  return dataUrl.toString();
 }
 
 function normalizeAssetUrl(value) {
@@ -45,7 +65,7 @@ function normalizeAssetUrl(value) {
     return value;
   }
 
-  return new URL(value, apiOrigin).toString();
+  return new URL(value, assetBase).toString();
 }
 
 function normalizeDisplayText(value) {
@@ -190,6 +210,30 @@ function fitTitleToFiveLines() {
   }
 }
 
+function restartProgressBar() {
+  if (!slideProgress || !slideProgressBar) {
+    return;
+  }
+
+  const shouldAnimate = state.items.length > 1;
+  slideProgress.hidden = !shouldAnimate;
+  clearInterval(state.progressTimer);
+
+  if (!shouldAnimate) {
+    slideProgressBar.style.width = "100%";
+    return;
+  }
+
+  state.progressStartedAt = Date.now();
+  slideProgressBar.style.width = "2%";
+
+  state.progressTimer = setInterval(() => {
+    const elapsed = Date.now() - state.progressStartedAt;
+    const progress = Math.max(2, Math.min(100, (elapsed / slideDelayMs) * 100));
+    slideProgressBar.style.width = `${progress}%`;
+  }, 100);
+}
+
 function renderSlide(index) {
   if (!state.items.length) {
     return;
@@ -222,6 +266,7 @@ function renderSlide(index) {
     slideDetails.appendChild(pill);
   });
   slideCounter.textContent = `${index + 1} / ${state.items.length}`;
+  restartProgressBar();
   requestAnimationFrame(() => fitTitleToFiveLines());
 }
 
@@ -238,18 +283,22 @@ function startRotation() {
 }
 
 function renderPayload(payload, sourceLabel) {
-  state.items = payload.items || [];
+  const payloadItems = Array.isArray(payload.items) ? payload.items : [];
+  state.items = payloadItems.filter((item) => includeClasses || !item.isClass);
   renderSlide(0);
   startRotation();
 }
 
 async function loadEvents(force = false) {
   try {
-    if (isFileProtocol) {
+    if (dataMode === "preview") {
       throw new Error("Direct file mode");
     }
 
-    const response = await fetch(buildApiUrl(force), { cache: "no-store" });
+    const response = await fetch(
+      dataMode === "server" ? buildApiUrl(force) : buildStaticDataUrl(force),
+      { cache: "no-store" }
+    );
     if (!response.ok) {
       throw new Error(`Request failed with ${response.status}`);
     }
@@ -262,7 +311,7 @@ async function loadEvents(force = false) {
     renderPayload({
       fetchedAt: null,
       items: getFallbackItems()
-    }, isFileProtocol
+    }, dataMode === "preview"
       ? "Preview data loaded from local file"
       : `Live feed unavailable (${error.message}), showing preview data`);
   }
@@ -273,5 +322,58 @@ function startRefreshLoop() {
   state.refreshTimer = setInterval(() => loadEvents(true), refreshMs);
 }
 
+function emitKeepAlive() {
+  const heartbeat = Date.now().toString();
+  ["mousemove", "pointermove", "touchmove"].forEach((eventName) => {
+    window.dispatchEvent(new Event(eventName));
+    document.dispatchEvent(new Event(eventName));
+  });
+
+  if (keepAlivePulse) {
+    keepAlivePulse.dataset.heartbeat = heartbeat;
+    keepAlivePulse.textContent = heartbeat;
+  }
+}
+
+function startKeepAliveLoop() {
+  clearInterval(state.keepAliveTimer);
+  emitKeepAlive();
+  state.keepAliveTimer = setInterval(emitKeepAlive, keepAliveMs);
+}
+
+async function startKeepAliveVideo() {
+  if (!keepAliveVideo || typeof HTMLCanvasElement === "undefined") {
+    return;
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 2;
+  canvas.height = 2;
+
+  const context = canvas.getContext("2d");
+  if (!context || typeof canvas.captureStream !== "function") {
+    return;
+  }
+
+  let frame = 0;
+  const drawFrame = () => {
+    frame += 1;
+    context.fillStyle = frame % 2 === 0 ? "#000000" : "#010101";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+  };
+
+  drawFrame();
+  setInterval(drawFrame, 1000);
+
+  try {
+    keepAliveVideo.srcObject = canvas.captureStream(1);
+    await keepAliveVideo.play();
+  } catch (error) {
+    keepAlivePulse.dataset.videoKeepAlive = `failed:${error.message}`;
+  }
+}
+
 loadEvents();
 startRefreshLoop();
+startKeepAliveLoop();
+startKeepAliveVideo();

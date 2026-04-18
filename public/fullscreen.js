@@ -1,7 +1,8 @@
 const params = new URLSearchParams(window.location.search);
 const isFileProtocol = window.location.protocol === "file:";
 const isLocalServer = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-const dataMode = isFileProtocol ? "preview" : (isLocalServer ? "server" : "static");
+const forcedDataMode = document.body.dataset.displayMode;
+const dataMode = forcedDataMode || (isFileProtocol ? "preview" : (isLocalServer ? "server" : "static"));
 const includeClasses = params.get("includeClasses") === "true";
 const slideDelayMs = Math.max(5000, Number.parseInt(params.get("delay") || "15000", 10) || 15000);
 const keepAliveMs = Math.max(15000, Number.parseInt(params.get("keepAliveMs") || "30000", 10) || 30000);
@@ -18,7 +19,9 @@ const state = {
   currentIndex: 0,
   rotateTimer: null,
   refreshTimer: null,
-  keepAliveTimer: null
+  keepAliveTimer: null,
+  progressTimer: null,
+  progressStartedAt: 0
 };
 
 const refreshMs = 5 * 60 * 1000;
@@ -31,6 +34,8 @@ const slideCounter = document.querySelector("#slideCounter");
 const slideTitle = document.querySelector("#slideTitle");
 const slideDate = document.querySelector("#slideDate");
 const slideDetails = document.querySelector("#slideDetails");
+const slideProgress = document.querySelector("#slideProgress");
+const slideProgressBar = document.querySelector("#slideProgressBar");
 const keepAlivePulse = document.querySelector("#keepAlivePulse");
 const keepAliveVideo = document.querySelector("#keepAliveVideo");
 
@@ -205,6 +210,30 @@ function fitTitleToFiveLines() {
   }
 }
 
+function restartProgressBar() {
+  if (!slideProgress || !slideProgressBar) {
+    return;
+  }
+
+  const shouldAnimate = state.items.length > 1;
+  slideProgress.hidden = !shouldAnimate;
+  clearInterval(state.progressTimer);
+
+  if (!shouldAnimate) {
+    slideProgressBar.style.width = "100%";
+    return;
+  }
+
+  state.progressStartedAt = Date.now();
+  slideProgressBar.style.width = "2%";
+
+  state.progressTimer = setInterval(() => {
+    const elapsed = Date.now() - state.progressStartedAt;
+    const progress = Math.max(2, Math.min(100, (elapsed / slideDelayMs) * 100));
+    slideProgressBar.style.width = `${progress}%`;
+  }, 100);
+}
+
 function renderSlide(index) {
   if (!state.items.length) {
     return;
@@ -237,6 +266,7 @@ function renderSlide(index) {
     slideDetails.appendChild(pill);
   });
   slideCounter.textContent = `${index + 1} / ${state.items.length}`;
+  restartProgressBar();
   requestAnimationFrame(() => fitTitleToFiveLines());
 }
 
