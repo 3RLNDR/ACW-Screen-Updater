@@ -11,6 +11,7 @@ $script:PublicRoot = Join-Path $script:ProjectRoot "public"
 $script:LogPath = Join-Path $script:ProjectRoot "server.log"
 $script:CacheRoot = Join-Path $script:ProjectRoot "cache"
 $script:ImageCacheRoot = Join-Path $script:CacheRoot "images"
+$script:QrCacheRoot = Join-Path $script:CacheRoot "qr"
 $script:SourceUrl = "https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/"
 $script:ClassCategories = @(
     "Adult Workshops and Activities",
@@ -105,6 +106,72 @@ function Get-LocalImageUrl {
     }
 
     return "/cache/images/{0}" -f [System.IO.Path]::GetFileName($cachedPath)
+}
+
+function Get-QrCacheFilePath {
+    param([string]$Url)
+
+    if ([string]::IsNullOrWhiteSpace($Url)) {
+        return $null
+    }
+
+    Ensure-Directory $script:QrCacheRoot
+
+    $fileName = "{0}.png" -f (Get-Sha1Hex $Url)
+    return Join-Path $script:QrCacheRoot $fileName
+}
+
+function Save-QrToCache {
+    param([string]$Url)
+
+    if ([string]::IsNullOrWhiteSpace($Url)) {
+        return $null
+    }
+
+    try {
+        $targetPath = Get-QrCacheFilePath $Url
+        if (Test-Path -LiteralPath $targetPath -PathType Leaf) {
+            return $targetPath
+        }
+
+        $providers = @(
+            ("https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=0&data={0}" -f [System.Uri]::EscapeDataString($Url)),
+            ("https://quickchart.io/qr?size=220&margin=0&text={0}" -f [System.Uri]::EscapeDataString($Url))
+        )
+
+        foreach ($providerUrl in $providers) {
+            try {
+                Write-Log ("Caching QR {0} via {1}" -f $Url, $providerUrl)
+                Invoke-WebRequest -Uri $providerUrl -OutFile $targetPath -UseBasicParsing -Headers @{
+                    "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
+                    "Referer" = $script:SourceUrl
+                }
+                if (Test-Path -LiteralPath $targetPath -PathType Leaf) {
+                    return $targetPath
+                }
+            } catch {
+                if (Test-Path -LiteralPath $targetPath -PathType Leaf) {
+                    Remove-Item -LiteralPath $targetPath -Force -ErrorAction SilentlyContinue
+                }
+            }
+        }
+
+        return $null
+    } catch {
+        Write-Log ("QR cache failed for {0}: {1}" -f $Url, $_.Exception.Message)
+        return $null
+    }
+}
+
+function Get-LocalQrUrl {
+    param([string]$Url)
+
+    $cachedPath = Save-QrToCache $Url
+    if ([string]::IsNullOrWhiteSpace($cachedPath)) {
+        return $null
+    }
+
+    return "/cache/qr/{0}" -f [System.IO.Path]::GetFileName($cachedPath)
 }
 
 function Convert-HtmlEntities {
@@ -1019,6 +1086,7 @@ function Get-EventCardData {
         link = $eventLink
         image = $bestImageUrl
         imageLocal = $null
+        qrLocal = $null
     }
 }
 
@@ -1094,6 +1162,9 @@ function Get-LiveEvents {
         foreach ($item in $items) {
             if (-not [string]::IsNullOrWhiteSpace($item.image)) {
                 $item.imageLocal = Get-LocalImageUrl $item.image
+            }
+            if (-not [string]::IsNullOrWhiteSpace($item.link)) {
+                $item.qrLocal = Get-LocalQrUrl $item.link
             }
         }
 
@@ -1308,6 +1379,24 @@ try {
                 $fullCachedPath = [System.IO.Path]::GetFullPath((Join-Path $script:ProjectRoot $relativeCachedPath.Replace("/", "\")))
 
                 if (-not $fullCachedPath.StartsWith($script:ImageCacheRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+                    Send-TextResponse -Client $client -Text "Forbidden" -StatusCode 403
+                    continue
+                }
+
+                if (-not (Test-Path -LiteralPath $fullCachedPath -PathType Leaf)) {
+                    Send-TextResponse -Client $client -Text "Not found" -StatusCode 404
+                    continue
+                }
+
+                Send-FileResponse -Client $client -FilePath $fullCachedPath
+                continue
+            }
+
+            if ($path.StartsWith("/cache/qr/", [System.StringComparison]::OrdinalIgnoreCase)) {
+                $relativeCachedPath = $path.TrimStart("/")
+                $fullCachedPath = [System.IO.Path]::GetFullPath((Join-Path $script:ProjectRoot $relativeCachedPath.Replace("/", "\")))
+
+                if (-not $fullCachedPath.StartsWith($script:QrCacheRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
                     Send-TextResponse -Client $client -Text "Forbidden" -StatusCode 403
                     continue
                 }

@@ -8,6 +8,7 @@ $ErrorActionPreference = "Stop"
 $sourceUrl = "https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/"
 $outputRoot = [System.IO.Path]::GetFullPath($OutputRoot)
 $imageRoot = Join-Path $outputRoot "cache\images"
+$qrRoot = Join-Path $outputRoot "cache\qr"
 $detailCache = @{}
 $classCategories = @(
     "Adult Workshops and Activities",
@@ -175,6 +176,39 @@ function Save-Image([string]$Url) {
     return "cache/images/{0}" -f $fileName
 }
 
+function Save-QrCode([string]$Url) {
+    if ([string]::IsNullOrWhiteSpace($Url)) { return $null }
+
+    $fileName = "{0}.png" -f (Get-Sha1Hex $Url)
+    $destination = Join-Path $qrRoot $fileName
+    if (Test-Path -LiteralPath $destination -PathType Leaf) {
+        return "cache/qr/{0}" -f $fileName
+    }
+
+    $providers = @(
+        ("https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=0&data={0}" -f [System.Uri]::EscapeDataString($Url)),
+        ("https://quickchart.io/qr?size=220&margin=0&text={0}" -f [System.Uri]::EscapeDataString($Url))
+    )
+
+    foreach ($providerUrl in $providers) {
+        try {
+            Invoke-WebRequest -Uri $providerUrl -OutFile $destination -UseBasicParsing -Headers @{
+                "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
+                "Referer" = $sourceUrl
+            }
+            if (Test-Path -LiteralPath $destination -PathType Leaf) {
+                return "cache/qr/{0}" -f $fileName
+            }
+        } catch {
+            if (Test-Path -LiteralPath $destination -PathType Leaf) {
+                Remove-Item -LiteralPath $destination -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
+    return $null
+}
+
 function Get-BestImageUrl([string]$Html) {
     foreach ($pattern in @('(?is)\sdata-srcset="([^"]+)"','(?is)\ssrcset="([^"]+)"','(?is)\sdata-src="([^"]+)"','(?is)\ssrc="([^"]+)"')) {
         $match = [regex]::Match($Html, $pattern)
@@ -258,6 +292,7 @@ function Get-EventDetails([string]$Url) {
 
 Ensure-Directory $outputRoot
 Reset-Directory $imageRoot
+Reset-Directory $qrRoot
 
 $response = Invoke-WebRequest -Uri $sourceUrl -UseBasicParsing -Headers @{
     "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
@@ -304,6 +339,7 @@ for ($i = 0; $i -lt $sections.Count; $i++) {
             $line
         }
         try { $imageLocal = if ($imageUrl) { Save-Image $imageUrl } else { $null } } catch { $imageLocal = $null }
+        try { $qrLocal = if ($eventLink) { Save-QrCode $eventLink } else { $null } } catch { $qrLocal = $null }
         $results.Add([pscustomobject]@{
             title = $title
             category = $sectionTitle
@@ -317,6 +353,7 @@ for ($i = 0; $i -lt $sections.Count; $i++) {
             link = $eventLink
             image = $imageUrl
             imageLocal = $imageLocal
+            qrLocal = $qrLocal
         })
     }
 }

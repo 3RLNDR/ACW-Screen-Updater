@@ -672,6 +672,16 @@ code {
   border: 1px solid rgba(28, 37, 34, 0.1);
 }
 
+.fullscreen-qr-panel[data-qr-status="unavailable"] {
+  background: rgba(255, 244, 232, 0.92);
+  border-color: rgba(177, 75, 45, 0.24);
+}
+
+.fullscreen-qr-panel[data-qr-status="unavailable"] .fullscreen-label::after {
+  content: " (QR unavailable on this screen)";
+  color: var(--brand-deep);
+}
+
 .fullscreen-qr-image {
   width: 9rem;
   height: 9rem;

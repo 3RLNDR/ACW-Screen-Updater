@@ -91,34 +91,62 @@ function getValidEventUrl(value) {
   }
 }
 
+function formatQrLinkLabel(eventUrl) {
+  try {
+    const url = new URL(eventUrl);
+    return `${url.host}${url.pathname === "/" ? "" : url.pathname}`;
+  } catch {
+    return eventUrl;
+  }
+}
+
 function updateQrPanel(item) {
   if (!slideQrPanel || !slideQrImage || !slideQrLink) {
     return;
   }
 
   const eventUrl = getValidEventUrl(item?.link);
+  const qrLocalUrl = normalizeAssetUrl(item?.qrLocal);
+
   if (!eventUrl) {
     slideQrPanel.hidden = true;
+    slideQrPanel.dataset.qrStatus = "hidden";
     slideQrImage.hidden = true;
     slideQrImage.removeAttribute("src");
     slideQrImage.alt = "";
+    slideQrImage.onload = null;
+    slideQrImage.onerror = null;
     slideQrLink.removeAttribute("href");
     slideQrLink.textContent = "";
     return;
   }
 
-  const qrUrl = new URL("https://api.qrserver.com/v1/create-qr-code/");
-  qrUrl.searchParams.set("size", "180x180");
-  qrUrl.searchParams.set("format", "svg");
-  qrUrl.searchParams.set("margin", "0");
-  qrUrl.searchParams.set("data", eventUrl);
-
   slideQrPanel.hidden = false;
-  slideQrImage.hidden = false;
-  slideQrImage.src = qrUrl.toString();
   slideQrImage.alt = `QR code for ${item.title || "event details"}`;
   slideQrLink.href = eventUrl;
-  slideQrLink.textContent = eventUrl;
+  slideQrLink.textContent = formatQrLinkLabel(eventUrl);
+  slideQrImage.onload = null;
+  slideQrImage.onerror = null;
+
+  if (!qrLocalUrl) {
+    slideQrPanel.dataset.qrStatus = "unavailable";
+    slideQrImage.hidden = true;
+    slideQrImage.removeAttribute("src");
+    return;
+  }
+
+  slideQrPanel.dataset.qrStatus = "loading";
+  slideQrImage.hidden = true;
+  slideQrImage.onload = () => {
+    slideQrPanel.dataset.qrStatus = "ready";
+    slideQrImage.hidden = false;
+  };
+  slideQrImage.onerror = () => {
+    slideQrPanel.dataset.qrStatus = "unavailable";
+    slideQrImage.hidden = true;
+    slideQrImage.removeAttribute("src");
+  };
+  slideQrImage.src = qrLocalUrl;
 }
 
 function escapeSvgText(value) {
@@ -247,12 +275,35 @@ function fitTitleToFiveLines() {
   slideTitle.style.fontSize = "";
   slideTitle.style.lineHeight = "";
 
+  const titleLength = slideTitle.textContent.trim().length;
+  const hasVisibleQr = Boolean(slideQrPanel && !slideQrPanel.hidden);
   const computed = window.getComputedStyle(slideTitle);
   let fontSize = Number.parseFloat(computed.fontSize);
-  const lineHeight = Number.parseFloat(computed.lineHeight) || fontSize * 0.95;
-  const maxHeight = lineHeight * 5 + 2;
 
-  while (slideTitle.offsetHeight > maxHeight && fontSize > 44) {
+  if (hasVisibleQr && titleLength >= 60) {
+    fontSize = Math.min(fontSize, 64);
+  }
+
+  if (hasVisibleQr && titleLength >= 80) {
+    fontSize = Math.min(fontSize, 56);
+  }
+
+  if (titleLength >= 100) {
+    fontSize = Math.min(fontSize, 50);
+  }
+
+  slideTitle.style.fontSize = `${fontSize}px`;
+  slideTitle.style.lineHeight = "0.95";
+
+  let measuredLineHeight = Number.parseFloat(window.getComputedStyle(slideTitle).lineHeight);
+  if (!Number.isFinite(measuredLineHeight)) {
+    measuredLineHeight = fontSize * 0.95;
+  }
+
+  const maxLines = hasVisibleQr ? 4 : 5;
+  const maxHeight = measuredLineHeight * maxLines + 2;
+
+  while (slideTitle.offsetHeight > maxHeight && fontSize > 40) {
     fontSize -= 2;
     slideTitle.style.fontSize = `${fontSize}px`;
     slideTitle.style.lineHeight = "0.95";

@@ -122,6 +122,7 @@ Each event item includes fields such as:
 - `link`
 - `image`
 - `imageLocal`
+- `qrLocal`
 
 ## Running locally
 
