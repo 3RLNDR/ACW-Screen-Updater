@@ -383,7 +383,7 @@ function startRotation() {
   }, slideDelayMs);
 }
 
-function renderPayload(payload, sourceLabel) {
+function renderPayload(payload) {
   const payloadItems = Array.isArray(payload.items) ? payload.items : [];
   state.items = payloadItems.filter((item) => includeClasses || !item.isClass);
   renderSlide(0);
@@ -405,16 +405,12 @@ async function loadEvents(force = false) {
     }
 
     const payload = await response.json();
-    renderPayload(payload, payload.sourceUrl
-      ? `Live from ${new URL(payload.sourceUrl).host}`
-      : "Live data loaded");
+    renderPayload(payload);
   } catch (error) {
     renderPayload({
       fetchedAt: null,
       items: getFallbackItems()
-    }, dataMode === "preview"
-      ? "Preview data loaded from local file"
-      : `Live feed unavailable (${error.message}), showing preview data`);
+    });
   }
 }
 

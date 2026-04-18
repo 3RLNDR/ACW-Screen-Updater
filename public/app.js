@@ -239,7 +239,7 @@ function getFallbackItems() {
       isClass: false,
       dateText: "16 Apr 2026",
       startTime: "7pm",
-      cost: "£12",
+      cost: "\u00A312",
       status: "",
       meta: ["Suitable for ages 11+"],
       link: "https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/"
@@ -250,7 +250,7 @@ function getFallbackItems() {
       isClass: false,
       dateText: "17 - 18 Apr 2026",
       startTime: "7:30pm",
-      cost: "£18",
+      cost: "\u00A318",
       status: "Limited Availability",
       meta: ["Live music performance"],
       link: "https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/"
@@ -261,7 +261,7 @@ function getFallbackItems() {
       isClass: false,
       dateText: "24 Apr 2026",
       startTime: "8pm",
-      cost: "£16",
+      cost: "\u00A316",
       status: "",
       meta: ["Stand-up comedy night"],
       link: "https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/"
@@ -272,7 +272,7 @@ function getFallbackItems() {
       isClass: false,
       dateText: "22 Apr 2026",
       startTime: "2pm",
-      cost: "£7",
+      cost: "\u00A37",
       status: "",
       meta: ["Film screening"],
       link: "https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/"
@@ -303,7 +303,7 @@ function getFallbackItems() {
       isClass: true,
       dateText: "20 Apr 2026",
       startTime: "6pm",
-      cost: "£8",
+      cost: "\u00A38",
       status: "",
       meta: ["Weekly creative class"],
       link: "https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/"
