@@ -149,7 +149,7 @@ There is also a helper launcher:
 
 - `Run-Live-Display.bat`
 
-Important: that batch file currently hardcodes `C:\Users\chris\OneDrive\Documents\ACW Screen Updater`. If the repo lives somewhere else, update the path before using it.
+Important: that batch file currently hardcodes `C:\Users\chris\Documents\ACW Screen Updater`. If the repo lives somewhere else, update the path before using it.
 
 ### Option 2: generate static data locally
 

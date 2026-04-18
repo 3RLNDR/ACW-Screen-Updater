@@ -951,12 +951,13 @@ function Normalize-CurrencyText {
         return "Free"
     }
 
-    $moneyMatch = [regex]::Match($text, '\d+(?:\.\d{2})?')
+    $currencyPattern = '(?i)(?:tickets?\s*)?' + [regex]::Escape([string][char]0x00A3) + '\s*(\d+(?:\.\d{2})?)'
+    $moneyMatch = [regex]::Match($text, $currencyPattern)
     if ($moneyMatch.Success) {
-        return ("{0}{1}" -f [char]0x00A3, $moneyMatch.Value)
+        return ("{0}{1}" -f [char]0x00A3, $moneyMatch.Groups[1].Value)
     }
 
-    return $text.Trim()
+    return $null
 }
 
 function Get-CostFromLines {
@@ -975,11 +976,9 @@ function Get-CostFromLines {
             return "Free"
         }
 
-        if ($normalized -match '(?i)(tickets?|price)' -or $normalized.Contains([string][char]0x00A3)) {
-            $value = Normalize-CurrencyText $normalized
-            if (-not [string]::IsNullOrWhiteSpace($value)) {
-                return $value
-            }
+        $value = Normalize-CurrencyText $normalized
+        if (-not [string]::IsNullOrWhiteSpace($value)) {
+            return $value
         }
     }
 
@@ -1621,11 +1620,15 @@ try {
             }
 
             if ($path -eq "/health") {
+                $hasFetchedEvents = $script:EventCache.GeneratedAt -ne [datetime]::MinValue
+                $healthOk = $hasFetchedEvents -and [string]::IsNullOrWhiteSpace($script:EventCache.LastError)
+
                 Send-JsonResponse -Client $client -Payload @{
-                    ok = $true
+                    ok = $healthOk
                     refreshedAt = $script:EventCache.GeneratedAt.ToString("o")
                     cachedItems = @($script:EventCache.Items).Count
                     lastError = $script:EventCache.LastError
+                    hasFetchedEvents = $hasFetchedEvents
                 }
                 continue
             }
