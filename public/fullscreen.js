@@ -136,10 +136,10 @@ function updateQrPanel(item) {
   }
 
   slideQrPanel.dataset.qrStatus = "loading";
-  slideQrImage.hidden = true;
+  slideQrImage.hidden = false;
+  slideQrImage.removeAttribute("src");
   slideQrImage.onload = () => {
     slideQrPanel.dataset.qrStatus = "ready";
-    slideQrImage.hidden = false;
   };
   slideQrImage.onerror = () => {
     slideQrPanel.dataset.qrStatus = "unavailable";
