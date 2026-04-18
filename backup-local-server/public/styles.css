@@ -662,12 +662,13 @@ code {
 .fullscreen-detail-pill {
   display: inline-flex;
   align-items: center;
-  padding: 0.65rem 0.95rem;
+  padding: 0.78rem 1.12rem;
   border-radius: 999px;
   background: var(--fs-pill-bg);
   border: 1px solid var(--fs-pill-border);
   color: var(--fs-pill-ink);
   font-weight: 700;
+  font-size: 1.06rem;
 }
 
 .fullscreen-title {
