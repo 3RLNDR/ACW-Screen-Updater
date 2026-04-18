@@ -4,6 +4,7 @@ const isLocalServer = window.location.hostname === "localhost" || window.locatio
 const dataMode = isFileProtocol ? "preview" : (isLocalServer ? "server" : "static");
 const includeClasses = params.get("includeClasses") === "true";
 const slideDelayMs = Math.max(5000, Number.parseInt(params.get("delay") || "15000", 10) || 15000);
+const keepAliveMs = Math.max(15000, Number.parseInt(params.get("keepAliveMs") || "30000", 10) || 30000);
 const apiOrigin = isLocalServer ? window.location.origin : "http://localhost:8080";
 const assetBase = window.location.href;
 const fullscreenThemeStorageKey = "fullscreenTheme";
@@ -16,7 +17,8 @@ const state = {
   items: [],
   currentIndex: 0,
   rotateTimer: null,
-  refreshTimer: null
+  refreshTimer: null,
+  keepAliveTimer: null
 };
 
 const refreshMs = 5 * 60 * 1000;
@@ -29,6 +31,7 @@ const slideCounter = document.querySelector("#slideCounter");
 const slideTitle = document.querySelector("#slideTitle");
 const slideDate = document.querySelector("#slideDate");
 const slideDetails = document.querySelector("#slideDetails");
+const keepAlivePulse = document.querySelector("#keepAlivePulse");
 
 function buildApiUrl(force = false) {
   const apiUrl = new URL("/api/events", apiOrigin);
@@ -288,5 +291,25 @@ function startRefreshLoop() {
   state.refreshTimer = setInterval(() => loadEvents(true), refreshMs);
 }
 
+function emitKeepAlive() {
+  const heartbeat = Date.now().toString();
+  ["mousemove", "pointermove", "touchmove"].forEach((eventName) => {
+    window.dispatchEvent(new Event(eventName));
+    document.dispatchEvent(new Event(eventName));
+  });
+
+  if (keepAlivePulse) {
+    keepAlivePulse.dataset.heartbeat = heartbeat;
+    keepAlivePulse.textContent = heartbeat;
+  }
+}
+
+function startKeepAliveLoop() {
+  clearInterval(state.keepAliveTimer);
+  emitKeepAlive();
+  state.keepAliveTimer = setInterval(emitKeepAlive, keepAliveMs);
+}
+
 loadEvents();
 startRefreshLoop();
+startKeepAliveLoop();
