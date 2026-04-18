@@ -23,6 +23,7 @@ $script:EventCache = @{
     LastError = $null
 }
 $script:EventPageDetailCache = @{}
+$script:EventPageDetailCacheMinutes = 30
 
 function Write-Log {
     param([string]$Message)
@@ -428,7 +429,26 @@ function Get-EventPageDetails {
     }
 
     if ($script:EventPageDetailCache.ContainsKey($Url)) {
-        return $script:EventPageDetailCache[$Url]
+        $cachedEntry = $script:EventPageDetailCache[$Url]
+        $cacheFetchedAt = $null
+        $cacheDetails = $null
+
+        if ($cachedEntry -is [hashtable] -or $cachedEntry -is [pscustomobject]) {
+            if ($null -ne $cachedEntry.PSObject.Properties["FetchedAt"]) {
+                $cacheFetchedAt = $cachedEntry.FetchedAt
+            }
+            if ($null -ne $cachedEntry.PSObject.Properties["Details"]) {
+                $cacheDetails = $cachedEntry.Details
+            }
+        } else {
+            $cacheDetails = $cachedEntry
+        }
+
+        if ($cacheFetchedAt -is [datetime] -and (((Get-Date) - $cacheFetchedAt).TotalMinutes -lt $script:EventPageDetailCacheMinutes)) {
+            return $cacheDetails
+        }
+
+        $script:EventPageDetailCache.Remove($Url)
     }
 
     try {
@@ -549,11 +569,17 @@ function Get-EventPageDetails {
             cost = $cost
         }
 
-        $script:EventPageDetailCache[$Url] = $details
+        $script:EventPageDetailCache[$Url] = @{
+            FetchedAt = Get-Date
+            Details = $details
+        }
         return $details
     } catch {
         Write-Log ("Event page detail lookup failed for {0}: {1}" -f $Url, $_.Exception.Message)
-        $script:EventPageDetailCache[$Url] = $null
+        $script:EventPageDetailCache[$Url] = @{
+            FetchedAt = Get-Date
+            Details = $null
+        }
         return $null
     }
 }
@@ -1034,8 +1060,12 @@ function Get-EventCardData {
     if (-not [string]::IsNullOrWhiteSpace($eventLink)) {
         $eventPageDetails = Get-EventPageDetails $eventLink
         if ($null -ne $eventPageDetails) {
-            if (-not [string]::IsNullOrWhiteSpace($eventPageDetails.dateText)) {
+            if ([string]::IsNullOrWhiteSpace($dateLine) -and -not [string]::IsNullOrWhiteSpace($eventPageDetails.dateText)) {
                 $dateLine = $eventPageDetails.dateText
+            } elseif (-not [string]::IsNullOrWhiteSpace($dateLine) -and
+                -not [string]::IsNullOrWhiteSpace($eventPageDetails.dateText) -and
+                (Normalize-Whitespace $dateLine) -ne (Normalize-Whitespace $eventPageDetails.dateText)) {
+                Write-Log ("Keeping listing date '{0}' for '{1}' instead of conflicting detail-page date '{2}' from {3}" -f $dateLine, $title, $eventPageDetails.dateText, $eventLink)
             }
             if (-not [string]::IsNullOrWhiteSpace($eventPageDetails.startTime)) {
                 $startTime = $eventPageDetails.startTime
