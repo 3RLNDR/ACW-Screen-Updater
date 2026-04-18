@@ -462,12 +462,30 @@ for ($i = 0; $i -lt $sections.Count; $i++) {
         if ($eventLink) {
             $details = Get-EventDetails $eventLink
             if ($details) {
-                if (-not $dateText -and $details.dateText) { $dateText = $details.dateText }
-                elseif ($dateText -and $details.dateText -and (Normalize-Whitespace $dateText) -ne (Normalize-Whitespace $details.dateText)) {
-                    Write-Host ("Keeping listing date '{0}' for '{1}' instead of conflicting detail-page date '{2}' from {3}" -f $dateText, $title, $details.dateText, $eventLink)
+                $detailFieldsAreTrusted = $true
+                if (-not $dateText -and $details.dateText) {
+                    $dateText = $details.dateText
+                } elseif ($dateText -and $details.dateText) {
+                    $listingDateKey = Get-DateSortKey $dateText
+                    $detailDateKey = Get-DateSortKey $details.dateText
+                    $datesConflict = $false
+
+                    if ($listingDateKey -ne [datetime]::MaxValue -and $detailDateKey -ne [datetime]::MaxValue) {
+                        $datesConflict = $listingDateKey -ne $detailDateKey
+                    } else {
+                        $datesConflict = (Normalize-Whitespace $dateText) -ne (Normalize-Whitespace $details.dateText)
+                    }
+
+                    if ($datesConflict) {
+                        Write-Host ("Keeping listing date '{0}' for '{1}' instead of conflicting detail-page date '{2}' from {3}" -f $dateText, $title, $details.dateText, $eventLink)
+                        $detailFieldsAreTrusted = $false
+                    }
                 }
-                if ($details.startTime) { $startTime = $details.startTime }
-                if ($details.cost) { $cost = $details.cost }
+
+                if ($detailFieldsAreTrusted) {
+                    if ($details.startTime) { $startTime = $details.startTime }
+                    if ($details.cost) { $cost = $details.cost }
+                }
             }
         }
         $titleKey = Normalize-CompareText $title

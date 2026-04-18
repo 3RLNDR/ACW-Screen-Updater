@@ -12,6 +12,7 @@ $script:LogPath = Join-Path $script:ProjectRoot "server.log"
 $script:CacheRoot = Join-Path $script:ProjectRoot "cache"
 $script:ImageCacheRoot = Join-Path $script:CacheRoot "images"
 $script:QrCacheRoot = Join-Path $script:CacheRoot "qr"
+$script:FetchHelperPath = Join-Path $script:ProjectRoot "scripts\fetch-url.mjs"
 $script:SourceUrl = "https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/"
 $script:ClassCategories = @(
     "Adult Workshops and Activities",
@@ -38,6 +39,151 @@ function Ensure-Directory {
 
     if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
         $null = New-Item -ItemType Directory -Path $Path -Force
+    }
+}
+
+function Invoke-NodeFetch {
+    param(
+        [string]$Url,
+        [string]$OutFile
+    )
+
+    $nodeCommand = Get-Command node -ErrorAction SilentlyContinue
+    if ($null -eq $nodeCommand) {
+        throw "Node.js is required for the HTTP fallback, but 'node' was not found."
+    }
+
+    if (-not (Test-Path -LiteralPath $script:FetchHelperPath -PathType Leaf)) {
+        throw "Fetch helper not found at $script:FetchHelperPath"
+    }
+
+    $arguments = @($script:FetchHelperPath, $Url)
+    if (-not [string]::IsNullOrWhiteSpace($OutFile)) {
+        $arguments += @("--out", $OutFile)
+    }
+
+    $previousProxyValues = @{
+        HTTP_PROXY = $env:HTTP_PROXY
+        HTTPS_PROXY = $env:HTTPS_PROXY
+        ALL_PROXY = $env:ALL_PROXY
+        GIT_HTTP_PROXY = $env:GIT_HTTP_PROXY
+        GIT_HTTPS_PROXY = $env:GIT_HTTPS_PROXY
+    }
+
+    try {
+        $env:HTTP_PROXY = ""
+        $env:HTTPS_PROXY = ""
+        $env:ALL_PROXY = ""
+        $env:GIT_HTTP_PROXY = ""
+        $env:GIT_HTTPS_PROXY = ""
+
+        & $nodeCommand.Source @arguments
+        if ($LASTEXITCODE -ne 0) {
+            throw "Node fetch failed for $Url"
+        }
+    } finally {
+        foreach ($key in $previousProxyValues.Keys) {
+            $value = $previousProxyValues[$key]
+            if ($null -eq $value) {
+                Remove-Item ("Env:{0}" -f $key) -ErrorAction SilentlyContinue
+            } else {
+                Set-Item ("Env:{0}" -f $key) -Value $value
+            }
+        }
+    }
+}
+
+function Get-WebContent {
+    param([string]$Url)
+
+    $headers = @{
+        "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
+        "Accept-Language" = "en-GB,en;q=0.9"
+        "Referer" = $script:SourceUrl
+    }
+
+    $previousProxyValues = @{
+        HTTP_PROXY = $env:HTTP_PROXY
+        HTTPS_PROXY = $env:HTTPS_PROXY
+        ALL_PROXY = $env:ALL_PROXY
+        GIT_HTTP_PROXY = $env:GIT_HTTP_PROXY
+        GIT_HTTPS_PROXY = $env:GIT_HTTPS_PROXY
+    }
+
+    try {
+        $env:HTTP_PROXY = ""
+        $env:HTTPS_PROXY = ""
+        $env:ALL_PROXY = ""
+        $env:GIT_HTTP_PROXY = ""
+        $env:GIT_HTTPS_PROXY = ""
+
+        try {
+            return (Invoke-WebRequest -Uri $Url -UseBasicParsing -Headers $headers).Content
+        } catch {
+            Write-Log ("Invoke-WebRequest failed for {0}; falling back to Node fetch: {1}" -f $Url, $_.Exception.Message)
+            $tempPath = [System.IO.Path]::GetTempFileName()
+            try {
+                Invoke-NodeFetch -Url $Url -OutFile $tempPath
+                return [System.IO.File]::ReadAllText($tempPath)
+            } finally {
+                if (Test-Path -LiteralPath $tempPath -PathType Leaf) {
+                    Remove-Item -LiteralPath $tempPath -Force -ErrorAction SilentlyContinue
+                }
+            }
+        }
+    } finally {
+        foreach ($key in $previousProxyValues.Keys) {
+            $value = $previousProxyValues[$key]
+            if ($null -eq $value) {
+                Remove-Item ("Env:{0}" -f $key) -ErrorAction SilentlyContinue
+            } else {
+                Set-Item ("Env:{0}" -f $key) -Value $value
+            }
+        }
+    }
+}
+
+function Download-WebFile {
+    param(
+        [string]$Url,
+        [string]$Destination
+    )
+
+    $headers = @{
+        "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
+        "Referer" = $script:SourceUrl
+    }
+
+    $previousProxyValues = @{
+        HTTP_PROXY = $env:HTTP_PROXY
+        HTTPS_PROXY = $env:HTTPS_PROXY
+        ALL_PROXY = $env:ALL_PROXY
+        GIT_HTTP_PROXY = $env:GIT_HTTP_PROXY
+        GIT_HTTPS_PROXY = $env:GIT_HTTPS_PROXY
+    }
+
+    try {
+        $env:HTTP_PROXY = ""
+        $env:HTTPS_PROXY = ""
+        $env:ALL_PROXY = ""
+        $env:GIT_HTTP_PROXY = ""
+        $env:GIT_HTTPS_PROXY = ""
+
+        try {
+            Invoke-WebRequest -Uri $Url -OutFile $Destination -UseBasicParsing -Headers $headers
+        } catch {
+            Write-Log ("Invoke-WebRequest download failed for {0}; falling back to Node fetch: {1}" -f $Url, $_.Exception.Message)
+            Invoke-NodeFetch -Url $Url -OutFile $Destination
+        }
+    } finally {
+        foreach ($key in $previousProxyValues.Keys) {
+            $value = $previousProxyValues[$key]
+            if ($null -eq $value) {
+                Remove-Item ("Env:{0}" -f $key) -ErrorAction SilentlyContinue
+            } else {
+                Set-Item ("Env:{0}" -f $key) -Value $value
+            }
+        }
     }
 }
 
@@ -87,10 +233,7 @@ function Save-ImageToCache {
         }
 
         Write-Log ("Caching image {0}" -f $Url)
-        Invoke-WebRequest -Uri $Url -OutFile $targetPath -UseBasicParsing -Headers @{
-            "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
-            "Referer" = $script:SourceUrl
-        }
+        Download-WebFile -Url $Url -Destination $targetPath
         return $targetPath
     } catch {
         Write-Log ("Image cache failed for {0}: {1}" -f $Url, $_.Exception.Message)
@@ -143,10 +286,7 @@ function Save-QrToCache {
         foreach ($providerUrl in $providers) {
             try {
                 Write-Log ("Caching QR {0} via {1}" -f $Url, $providerUrl)
-                Invoke-WebRequest -Uri $providerUrl -OutFile $targetPath -UseBasicParsing -Headers @{
-                    "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
-                    "Referer" = $script:SourceUrl
-                }
+                Download-WebFile -Url $providerUrl -Destination $targetPath
                 if (Test-Path -LiteralPath $targetPath -PathType Leaf) {
                     return $targetPath
                 }
@@ -634,21 +774,36 @@ function Get-EventPageDetails {
     }
 
     if ($script:EventPageDetailCache.ContainsKey($Url)) {
-        return $script:EventPageDetailCache[$Url]
+        $cachedEntry = $script:EventPageDetailCache[$Url]
+        $cacheFetchedAt = $null
+        $cacheDetails = $null
+
+        if ($cachedEntry -is [hashtable] -or $cachedEntry -is [pscustomobject]) {
+            if ($null -ne $cachedEntry.PSObject.Properties["FetchedAt"]) {
+                $cacheFetchedAt = $cachedEntry.FetchedAt
+            }
+            if ($null -ne $cachedEntry.PSObject.Properties["Details"]) {
+                $cacheDetails = $cachedEntry.Details
+            }
+        } else {
+            $cacheDetails = $cachedEntry
+        }
+
+        if ($cacheFetchedAt -is [datetime] -and (((Get-Date) - $cacheFetchedAt).TotalMinutes -lt $script:EventPageDetailCacheMinutes)) {
+            return $cacheDetails
+        }
+
+        $script:EventPageDetailCache.Remove($Url)
     }
 
     try {
-        $response = Invoke-WebRequest -Uri $Url -UseBasicParsing -Headers @{
-            "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
-            "Accept-Language" = "en-GB,en;q=0.9"
-            "Referer" = $script:SourceUrl
-        }
+        $content = Get-WebContent -Url $Url
 
         $dateText = $null
         $startTime = $null
         $cost = $null
 
-        $text = Convert-ToPlainText $response.Content
+        $text = Convert-ToPlainText $content
         $lines = @(
             $text -split "`n" |
             ForEach-Object { $_.Trim() } |
@@ -721,7 +876,7 @@ function Get-EventPageDetails {
         }
 
         if ([string]::IsNullOrWhiteSpace($dateText) -or [string]::IsNullOrWhiteSpace($startTime)) {
-            if ($response.Content -match '"startDate"\s*:\s*"([^"]+)"') {
+            if ($content -match '"startDate"\s*:\s*"([^"]+)"') {
                 $iso = $Matches[1]
                 $parsed = [datetime]::MinValue
                 if ([datetime]::TryParse($iso, [ref]$parsed)) {
@@ -737,8 +892,8 @@ function Get-EventPageDetails {
             }
         }
 
-        if ([string]::IsNullOrWhiteSpace($cost) -and ($response.Content -match '"price"\s*:\s*"?(0|[0-9]+(?:\.[0-9]{2})?)"?' -or
-            $response.Content -match '"lowPrice"\s*:\s*"?(0|[0-9]+(?:\.[0-9]{2})?)"?')) {
+        if ([string]::IsNullOrWhiteSpace($cost) -and ($content -match '"price"\s*:\s*"?(0|[0-9]+(?:\.[0-9]{2})?)"?' -or
+            $content -match '"lowPrice"\s*:\s*"?(0|[0-9]+(?:\.[0-9]{2})?)"?')) {
             $priceValue = $Matches[1]
             if ($priceValue -eq "0") {
                 $cost = "Free"
@@ -753,11 +908,17 @@ function Get-EventPageDetails {
             cost = $cost
         }
 
-        $script:EventPageDetailCache[$Url] = $details
+        $script:EventPageDetailCache[$Url] = @{
+            FetchedAt = Get-Date
+            Details = $details
+        }
         return $details
     } catch {
         Write-Log ("Event page detail lookup failed for {0}: {1}" -f $Url, $_.Exception.Message)
-        $script:EventPageDetailCache[$Url] = $null
+        $script:EventPageDetailCache[$Url] = @{
+            FetchedAt = Get-Date
+            Details = $null
+        }
         return $null
     }
 }
@@ -833,21 +994,36 @@ function Get-EventPageDetails {
     }
 
     if ($script:EventPageDetailCache.ContainsKey($Url)) {
-        return $script:EventPageDetailCache[$Url]
+        $cachedEntry = $script:EventPageDetailCache[$Url]
+        $cacheFetchedAt = $null
+        $cacheDetails = $null
+
+        if ($cachedEntry -is [hashtable] -or $cachedEntry -is [pscustomobject]) {
+            if ($null -ne $cachedEntry.PSObject.Properties["FetchedAt"]) {
+                $cacheFetchedAt = $cachedEntry.FetchedAt
+            }
+            if ($null -ne $cachedEntry.PSObject.Properties["Details"]) {
+                $cacheDetails = $cachedEntry.Details
+            }
+        } else {
+            $cacheDetails = $cachedEntry
+        }
+
+        if ($cacheFetchedAt -is [datetime] -and (((Get-Date) - $cacheFetchedAt).TotalMinutes -lt $script:EventPageDetailCacheMinutes)) {
+            return $cacheDetails
+        }
+
+        $script:EventPageDetailCache.Remove($Url)
     }
 
     try {
-        $response = Invoke-WebRequest -Uri $Url -UseBasicParsing -Headers @{
-            "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
-            "Accept-Language" = "en-GB,en;q=0.9"
-            "Referer" = $script:SourceUrl
-        }
+        $content = Get-WebContent -Url $Url
 
         $dateText = $null
         $startTime = $null
         $cost = $null
 
-        $text = Convert-ToPlainText $response.Content
+        $text = Convert-ToPlainText $content
         $lines = @(
             $text -split "`n" |
             ForEach-Object { $_.Trim() } |
@@ -920,7 +1096,7 @@ function Get-EventPageDetails {
         }
 
         if ([string]::IsNullOrWhiteSpace($dateText) -or [string]::IsNullOrWhiteSpace($startTime)) {
-            if ($response.Content -match '"startDate"\s*:\s*"([^"]+)"') {
+            if ($content -match '"startDate"\s*:\s*"([^"]+)"') {
                 $iso = $Matches[1]
                 $parsed = [datetime]::MinValue
                 if ([datetime]::TryParse($iso, [ref]$parsed)) {
@@ -936,8 +1112,8 @@ function Get-EventPageDetails {
             }
         }
 
-        if ([string]::IsNullOrWhiteSpace($cost) -and ($response.Content -match '"price"\s*:\s*"?(0|[0-9]+(?:\.[0-9]{2})?)"?' -or
-            $response.Content -match '"lowPrice"\s*:\s*"?(0|[0-9]+(?:\.[0-9]{2})?)"?')) {
+        if ([string]::IsNullOrWhiteSpace($cost) -and ($content -match '"price"\s*:\s*"?(0|[0-9]+(?:\.[0-9]{2})?)"?' -or
+            $content -match '"lowPrice"\s*:\s*"?(0|[0-9]+(?:\.[0-9]{2})?)"?')) {
             $priceValue = $Matches[1]
             if ($priceValue -eq "0") {
                 $cost = "Free"
@@ -952,11 +1128,17 @@ function Get-EventPageDetails {
             cost = $cost
         }
 
-        $script:EventPageDetailCache[$Url] = $details
+        $script:EventPageDetailCache[$Url] = @{
+            FetchedAt = Get-Date
+            Details = $details
+        }
         return $details
     } catch {
         Write-Log ("Event page detail lookup failed for {0}: {1}" -f $Url, $_.Exception.Message)
-        $script:EventPageDetailCache[$Url] = $null
+        $script:EventPageDetailCache[$Url] = @{
+            FetchedAt = Get-Date
+            Details = $null
+        }
         return $null
     }
 }
@@ -1019,6 +1201,40 @@ function Get-BestImageUrlFromCard {
     return $null
 }
 
+function Get-EventCardPermalink {
+    param([string]$CardHtml)
+
+    $permalinkMatch = [regex]::Match($CardHtml, '(?is)<a[^>]+class="[^"]*\bc-event-card__permalink\b[^"]*"[^>]+href="([^"]+)"')
+    if ($permalinkMatch.Success) {
+        return Get-AbsoluteUrl $permalinkMatch.Groups[1].Value
+    }
+
+    $linkMatch = [regex]::Match($CardHtml, '(?is)<a[^>]+href="([^"]+)"[^>]*>')
+    if ($linkMatch.Success) {
+        return Get-AbsoluteUrl $linkMatch.Groups[1].Value
+    }
+
+    return $null
+}
+
+function Get-EventCardBlocks {
+    param([string]$SectionHtml)
+
+    $containerMatches = [regex]::Matches($SectionHtml, '(?is)<div[^>]+class="[^"]*\bc-col-events-block__event-card-container\b[^"]*"[^>]*>')
+    if ($containerMatches.Count -gt 0) {
+        $blocks = New-Object System.Collections.Generic.List[string]
+        for ($index = 0; $index -lt $containerMatches.Count; $index++) {
+            $start = $containerMatches[$index].Index
+            $end = if ($index + 1 -lt $containerMatches.Count) { $containerMatches[$index + 1].Index } else { $SectionHtml.Length }
+            $blocks.Add($SectionHtml.Substring($start, $end - $start))
+        }
+
+        return @($blocks)
+    }
+
+    return @([regex]::Matches($SectionHtml, "(?is)<a\b[^>]*>.*?<h3[^>]*>.*?</h3>.*?</a>") | ForEach-Object { $_.Value })
+}
+
 function Get-EventCardData {
     param(
         [string]$SectionTitle,
@@ -1035,7 +1251,6 @@ function Get-EventCardData {
         return $null
     }
 
-    $linkMatch = [regex]::Match($CardHtml, "(?is)<a[^>]+href=""([^""]+)""[^>]*>")
     $bestImageUrl = Get-BestImageUrlFromCard $CardHtml
 
     $text = Convert-ToPlainText $CardHtml
@@ -1052,7 +1267,7 @@ function Get-EventCardData {
         }
     }
 
-    $eventLink = if ($linkMatch.Success) { Get-AbsoluteUrl $linkMatch.Groups[1].Value } else { $null }
+    $eventLink = Get-EventCardPermalink $CardHtml
     $dateLine = Get-DateTextFromLines $lines
     $startTime = Get-StartTimeFromLines $lines
     $cost = Get-CostFromLines -Lines $lines -Badges $badges
@@ -1060,18 +1275,33 @@ function Get-EventCardData {
     if (-not [string]::IsNullOrWhiteSpace($eventLink)) {
         $eventPageDetails = Get-EventPageDetails $eventLink
         if ($null -ne $eventPageDetails) {
+            $detailFieldsAreTrusted = $true
             if ([string]::IsNullOrWhiteSpace($dateLine) -and -not [string]::IsNullOrWhiteSpace($eventPageDetails.dateText)) {
                 $dateLine = $eventPageDetails.dateText
-            } elseif (-not [string]::IsNullOrWhiteSpace($dateLine) -and
-                -not [string]::IsNullOrWhiteSpace($eventPageDetails.dateText) -and
-                (Normalize-Whitespace $dateLine) -ne (Normalize-Whitespace $eventPageDetails.dateText)) {
-                Write-Log ("Keeping listing date '{0}' for '{1}' instead of conflicting detail-page date '{2}' from {3}" -f $dateLine, $title, $eventPageDetails.dateText, $eventLink)
+            } elseif (-not [string]::IsNullOrWhiteSpace($dateLine) -and -not [string]::IsNullOrWhiteSpace($eventPageDetails.dateText)) {
+                $listingDateKey = Get-DateSortKey $dateLine
+                $detailDateKey = Get-DateSortKey $eventPageDetails.dateText
+                $datesConflict = $false
+
+                if ($listingDateKey -ne [datetime]::MaxValue -and $detailDateKey -ne [datetime]::MaxValue) {
+                    $datesConflict = $listingDateKey -ne $detailDateKey
+                } else {
+                    $datesConflict = (Normalize-Whitespace $dateLine) -ne (Normalize-Whitespace $eventPageDetails.dateText)
+                }
+
+                if ($datesConflict) {
+                    Write-Log ("Keeping listing date '{0}' for '{1}' instead of conflicting detail-page date '{2}' from {3}" -f $dateLine, $title, $eventPageDetails.dateText, $eventLink)
+                    $detailFieldsAreTrusted = $false
+                }
             }
-            if (-not [string]::IsNullOrWhiteSpace($eventPageDetails.startTime)) {
-                $startTime = $eventPageDetails.startTime
-            }
-            if (-not [string]::IsNullOrWhiteSpace($eventPageDetails.cost)) {
-                $cost = $eventPageDetails.cost
+
+            if ($detailFieldsAreTrusted) {
+                if (-not [string]::IsNullOrWhiteSpace($eventPageDetails.startTime)) {
+                    $startTime = $eventPageDetails.startTime
+                }
+                if (-not [string]::IsNullOrWhiteSpace($eventPageDetails.cost)) {
+                    $cost = $eventPageDetails.cost
+                }
             }
         }
     }
@@ -1151,10 +1381,10 @@ function Parse-EventsFromHtml {
         $sectionEnd = if ($index + 1 -lt $sectionMatches.Count) { $sectionMatches[$index + 1].Index } else { $Html.Length }
         $sectionHtml = $Html.Substring($sectionStart, $sectionEnd - $sectionStart)
 
-        $cardMatches = [regex]::Matches($sectionHtml, "(?is)<a\b[^>]*>.*?<h3[^>]*>.*?</h3>.*?</a>")
+        $cardBlocks = Get-EventCardBlocks -SectionHtml $sectionHtml
 
-        foreach ($cardMatch in $cardMatches) {
-            $item = Get-EventCardData -SectionTitle $sectionTitle -CardHtml $cardMatch.Value
+        foreach ($cardBlock in $cardBlocks) {
+            $item = Get-EventCardData -SectionTitle $sectionTitle -CardHtml $cardBlock
             if ($null -ne $item) {
                 $results.Add($item)
             }
@@ -1183,11 +1413,7 @@ function Get-LiveEvents {
 
     try {
         Write-Log ("Fetching live events from {0}" -f $script:SourceUrl)
-        $response = Invoke-WebRequest -Uri $script:SourceUrl -UseBasicParsing -Headers @{
-            "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
-            "Accept-Language" = "en-GB,en;q=0.9"
-        }
-        $items = Parse-EventsFromHtml -Html $response.Content
+        $items = Parse-EventsFromHtml -Html (Get-WebContent -Url $script:SourceUrl)
 
         foreach ($item in $items) {
             if (-not [string]::IsNullOrWhiteSpace($item.image)) {
