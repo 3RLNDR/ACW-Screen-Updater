@@ -1,90 +1,9 @@
 ﻿{
-    "fetchedAt":  "2026-04-14T20:41:54.4416006+01:00",
+    "fetchedAt":  "2026-04-18T14:05:41.8825546+01:00",
     "includeClasses":  true,
     "sourceUrl":  "https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/",
-    "total":  23,
+    "total":  44,
     "items":  [
-                  {
-                      "title":  "Creative You Junior - Songwriting",
-                      "category":  "Children and Young People\u0027s Activities",
-                      "isClass":  true,
-                      "dateText":  "15 Apr 2026",
-                      "startTime":  "10:00am",
-                      "cost":  "Free",
-                      "sortDate":  "2026-04-15T00:00:00.0000000+01:00",
-                      "status":  "Sold Out",
-                      "meta":  [
-
-                               ],
-                      "link":  "https://www.sunderlandculture.org.uk/whats-on/creative-you-junior-songwriting/",
-                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/01/Introduction-to-Songwriting.jpg?resize=1287%2C990\u0026gravity",
-                      "imageLocal":  "cache/images/3440ec3fdc171bdd2397640e8c815926ef4c25ec.jpg"
-                  },
-                  {
-                      "title":  "Creative You Junior - Join the Band",
-                      "category":  "Children and Young People\u0027s Activities",
-                      "isClass":  true,
-                      "dateText":  "16 Apr 2026",
-                      "startTime":  "10:00am",
-                      "cost":  "Free",
-                      "sortDate":  "2026-04-16T00:00:00.0000000+01:00",
-                      "status":  "Sold Out",
-                      "meta":  [
-
-                               ],
-                      "link":  "https://www.sunderlandculture.org.uk/whats-on/creative-you-junior-join-the-band-2/",
-                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/01/Join-the-Band-1.jpg?resize=1287%2C990\u0026gravity",
-                      "imageLocal":  "cache/images/1e31406b4ad823ae77f306fec7bf8abcd3545e33.jpg"
-                  },
-                  {
-                      "title":  "Wired",
-                      "category":  "Theatre and Performance",
-                      "isClass":  false,
-                      "dateText":  "16 Apr 2026",
-                      "startTime":  "7:30pm",
-                      "cost":  null,
-                      "sortDate":  "2026-04-16T00:00:00.0000000+01:00",
-                      "status":  "",
-                      "meta":  [
-                                   "Suitable for ages 11+",
-                                   "Take Flight"
-                               ],
-                      "link":  "https://www.sunderlandculture.org.uk/whats-on/wired/",
-                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/02/Wired-graphic-web-aspect-ratio-16-9.jpg?resize=520%2C400\u0026gravity",
-                      "imageLocal":  "cache/images/4b13f9f07d18dd5ffba9eb82c40532af8f7fdbba.jpg"
-                  },
-                  {
-                      "title":  "Creative You Junior - Audio Storytelling",
-                      "category":  "Children and Young People\u0027s Activities",
-                      "isClass":  true,
-                      "dateText":  "17 Apr 2026",
-                      "startTime":  "10:00am",
-                      "cost":  "Free",
-                      "sortDate":  "2026-04-17T00:00:00.0000000+01:00",
-                      "status":  "Free",
-                      "meta":  [
-
-                               ],
-                      "link":  "https://www.sunderlandculture.org.uk/whats-on/creative-you-audio-storytelling/",
-                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/03/Audio-Storytelling.jpg?resize=1287%2C990\u0026gravity",
-                      "imageLocal":  "cache/images/fd87091612b82ffa28057de7987f8aed8d48cddb.jpg"
-                  },
-                  {
-                      "title":  "Exploring Colour Through Oil Pastels with Rory Williams",
-                      "category":  "Adult Workshops and Activities",
-                      "isClass":  true,
-                      "dateText":  "17 Apr 2026",
-                      "startTime":  "10:00am",
-                      "cost":  null,
-                      "sortDate":  "2026-04-17T00:00:00.0000000+01:00",
-                      "status":  "Limited Availability",
-                      "meta":  [
-                                   "Washington Writers"
-                               ],
-                      "link":  "https://www.sunderlandculture.org.uk/whats-on/exploring-colour-through-oil-pastels-with-rory-williams/",
-                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/03/Exploring-Colour-Through-Oil-Pastels-with-Rory-Williams-scaled-aspect-ratio-16-9-1.jpg?resize=1287%2C990\u0026gravity",
-                      "imageLocal":  "cache/images/025bf94ccad9bead91747883783e7c1d989dbc58.jpg"
-                  },
                   {
                       "title":  "10CCLO",
                       "category":  "Music",
@@ -95,46 +14,64 @@
                       "sortDate":  "2026-04-18T00:00:00.0000000+01:00",
                       "status":  "Limited Availability",
                       "meta":  [
-                                   "17 – 18 Apr 2026",
-                                   "Swing Band Dance Night with The Bright Street Band"
+
                                ],
                       "link":  "https://www.sunderlandculture.org.uk/whats-on/10cclo/",
                       "image":  "https://images.sunderlandculture.org.uk/uploads/2025/12/web10cclo-i-scaled-aspect-ratio-16-9-aspect-ratio-16-9.jpg?resize=520%2C400\u0026gravity",
-                      "imageLocal":  "cache/images/04e2aed0b6aa6b6180f2bbc1d5803141d5d6fa2e.jpg"
+                      "imageLocal":  "cache/images/04e2aed0b6aa6b6180f2bbc1d5803141d5d6fa2e.jpg",
+                      "qrLocal":  "cache/qr/4a4f5210594aaea0755dc07c24a98475d1a937aa.png"
                   },
                   {
-                      "title":  "Drink and Draw Saturdays",
-                      "category":  "Adult Workshops and Activities",
-                      "isClass":  true,
+                      "title":  "Swing Band Dance Night with The Bright Street Band",
+                      "category":  "Music",
+                      "isClass":  false,
                       "dateText":  "18 Apr 2026",
-                      "startTime":  "1:00pm",
+                      "startTime":  "6:30pm",
                       "cost":  null,
                       "sortDate":  "2026-04-18T00:00:00.0000000+01:00",
                       "status":  "",
                       "meta":  [
-                                   "One Voice Community Choir"
+
                                ],
-                      "link":  "https://www.sunderlandculture.org.uk/whats-on/drink-and-draw-saturdays/",
-                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/01/Saturday-Drink-Draw-aspect-ratio-16-9.jpg?resize=780%2C600\u0026gravity",
-                      "imageLocal":  "cache/images/2e1b4857171c8d657b3aa4299b1da9b9ee3decaf.jpg"
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/swing-band-dance-night-with-the-bright-street-band/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2024/08/IMG_2945a.jpg?resize=780%2C600\u0026gravity",
+                      "imageLocal":  "cache/images/fdb8dbc6d0ff885f497b218cd29d8199d903ecb5.jpg",
+                      "qrLocal":  "cache/qr/aca90a725e9d1c76bebbac9c18484c613ac02bc6.png"
                   },
                   {
-                      "title":  "Right Track",
+                      "title":  "One Voice Community Choir",
+                      "category":  "Adult Workshops and Activities",
+                      "isClass":  true,
+                      "dateText":  "21 Apr 2026",
+                      "startTime":  "5:30pm",
+                      "cost":  null,
+                      "sortDate":  "2026-04-21T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+                                   "Tuesdays, 5:30pm-7pm"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/community-choir-one-voice/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2024/08/20240706-Sunderland-Culture-Arts-Centre-Washington-72-scaled-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/b37ecb15d5e5490fc70fbf668646358aced2d9db.jpg",
+                      "qrLocal":  "cache/qr/646f5e1b73ce159592fc047ba342f7bd699f3f65.png"
+                  },
+                  {
+                      "title":  "Teenage Craft Club",
                       "category":  "Children and Young People\u0027s Activities",
                       "isClass":  true,
-                      "dateText":  "18 Apr 2026",
-                      "startTime":  "10:30am",
+                      "dateText":  "21 Apr 2026",
+                      "startTime":  "6pm",
                       "cost":  "Free",
-                      "sortDate":  "2026-04-18T00:00:00.0000000+01:00",
+                      "sortDate":  "2026-04-21T00:00:00.0000000+01:00",
                       "status":  "Free",
                       "meta":  [
-                                   "Saturdays, 10:30am-12:30pm",
-                                   "11-19",
-                                   "Teenage Craft Club"
+                                   "Tuesdays (Fortnightly), 6pm-7:30pm",
+                                   "11-19"
                                ],
-                      "link":  "https://www.sunderlandculture.org.uk/whats-on/right-track/",
-                      "image":  "https://images.sunderlandculture.org.uk/uploads/2024/08/Right-Track-scaled-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
-                      "imageLocal":  "cache/images/dc12bbdc2d5160b2ec8534d526c51585fc258615.jpg"
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/teenage-craft-club/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/03/Teenage-Craft-Club-1-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/41d14a3ab1b937309ff3b9c110b151268bf14b48.jpg",
+                      "qrLocal":  "cache/qr/0664674133e14af5f41366f555eafbaec64d6069.png"
                   },
                   {
                       "title":  "Afternoon Watercolours",
@@ -146,12 +83,30 @@
                       "sortDate":  "2026-04-22T00:00:00.0000000+01:00",
                       "status":  "",
                       "meta":  [
-                                   "Wednesdays, 1:30pm-3:30pm",
-                                   "Writing About Place and Belonging with Julie Carter"
+                                   "Wednesdays, 1:30pm-3:30pm"
                                ],
                       "link":  "https://www.sunderlandculture.org.uk/whats-on/watercolour-classes-afternoon/",
                       "image":  "https://images.sunderlandculture.org.uk/uploads/2024/08/TOF_3579-copy-aspect-ratio-16-9-1.jpg?resize=1287%2C990\u0026gravity",
-                      "imageLocal":  "cache/images/6e198945b51aab61d8fa3d2c8dc4e8a049472000.jpg"
+                      "imageLocal":  "cache/images/6e198945b51aab61d8fa3d2c8dc4e8a049472000.jpg",
+                      "qrLocal":  "cache/qr/38b03cb6cd05fef3d6563374397bcd42c3559616.png"
+                  },
+                  {
+                      "title":  "Animate Club",
+                      "category":  "Children and Young People\u0027s Activities",
+                      "isClass":  true,
+                      "dateText":  "22 Apr 2026",
+                      "startTime":  "6pm",
+                      "cost":  "Free",
+                      "sortDate":  "2026-04-22T00:00:00.0000000+01:00",
+                      "status":  "Free",
+                      "meta":  [
+                                   "Wednesdays (Fortnightly), 6pm-7:30pm",
+                                   "11-19"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/animate-club/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/03/Animate-Club-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/d14c19ca94a4224accc62d295bae7c5ef7e73a02.jpg",
+                      "qrLocal":  "cache/qr/d95a622500b7c1c0e3b94c3daf1f6633e1dd74a1.png"
                   },
                   {
                       "title":  "Morning Watercolours",
@@ -163,12 +118,12 @@
                       "sortDate":  "2026-04-22T00:00:00.0000000+01:00",
                       "status":  "",
                       "meta":  [
-                                   "Wednesdays, 9:30am-12:30pm",
-                                   "The B#\u0027s Community Choir"
+                                   "Wednesdays, 9:30am-12:30pm"
                                ],
                       "link":  "https://www.sunderlandculture.org.uk/whats-on/watercolour-classes-morning/",
                       "image":  "https://images.sunderlandculture.org.uk/uploads/2024/08/TOF_3579-copy-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
-                      "imageLocal":  "cache/images/56ff5fbc44a455ce0d6d3a8bf93865d328f18617.jpg"
+                      "imageLocal":  "cache/images/56ff5fbc44a455ce0d6d3a8bf93865d328f18617.jpg",
+                      "qrLocal":  "cache/qr/81791f177a6e66f50404cfa14719419ec8be9f81.png"
                   },
                   {
                       "title":  "Mr Drayton\u0027s Rock Docs: Purple Rain",
@@ -180,11 +135,29 @@
                       "sortDate":  "2026-04-22T00:00:00.0000000+01:00",
                       "status":  "",
                       "meta":  [
-                                   "I Swear"
+
                                ],
                       "link":  "https://www.sunderlandculture.org.uk/whats-on/mr-draytons-rock-docs-purple-rain/",
                       "image":  "https://images.sunderlandculture.org.uk/uploads/2025/04/Rain.jpg?resize=1287%2C990\u0026gravity",
-                      "imageLocal":  "cache/images/349a6d72c9638b02c007f120456f865ac90b275d.jpg"
+                      "imageLocal":  "cache/images/349a6d72c9638b02c007f120456f865ac90b275d.jpg",
+                      "qrLocal":  "cache/qr/c6333aa3e70eeee8bb4a8d1149bdef6ef209c090.png"
+                  },
+                  {
+                      "title":  "Qigong \u0026 Meditation - 4-Week Block",
+                      "category":  "Adult Workshops and Activities",
+                      "isClass":  true,
+                      "dateText":  "22 Apr 2026",
+                      "startTime":  null,
+                      "cost":  null,
+                      "sortDate":  "2026-04-22T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+                                   "18+"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/qigong-meditation-lightwork-4-week-courses/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2025/07/Qigong-crop-aspect-ratio-16-9.jpg?resize=780%2C600\u0026gravity",
+                      "imageLocal":  "cache/images/5390a393d2bf71fcfbff61c4a63288e366a9298d.jpg",
+                      "qrLocal":  "cache/qr/cb3cd9738b346b9f174a559c1d3ec85df6ac5aa0.png"
                   },
                   {
                       "title":  "Raising Our Voices Together with the WHIST Choir",
@@ -200,7 +173,112 @@
                                ],
                       "link":  "https://www.sunderlandculture.org.uk/whats-on/raising-our-voices-together-with-the-whist-choir/",
                       "image":  "https://images.sunderlandculture.org.uk/uploads/2026/03/WHIST-Choir-aspect-ratio-16-9.jpg?resize=780%2C600\u0026gravity",
-                      "imageLocal":  "cache/images/127e558a62b8f07451ca62f7454b563105e4b315.jpg"
+                      "imageLocal":  "cache/images/127e558a62b8f07451ca62f7454b563105e4b315.jpg",
+                      "qrLocal":  "cache/qr/9278709e2ad9dd60b53ca583d2e0fbc2cfb56fec.png"
+                  },
+                  {
+                      "title":  "The B#\u0027s Community Choir",
+                      "category":  "Adult Workshops and Activities",
+                      "isClass":  true,
+                      "dateText":  "22 Apr 2026",
+                      "startTime":  "10am",
+                      "cost":  null,
+                      "sortDate":  "2026-04-22T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+                                   "Wednesdays, 10am-11:30am"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/community-choir-the-bs/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2024/07/20240706-Sunderland-Culture-Arts-Centre-Washington-19-scaled.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/dbce21b4bb68d28a8f3952054bdb3713256d1fdf.jpg",
+                      "qrLocal":  "cache/qr/f23fec960eda1fbb89a586fd62067bf972119970.png"
+                  },
+                  {
+                      "title":  "Writing About Place and Belonging with Julie Carter",
+                      "category":  "Adult Workshops and Activities",
+                      "isClass":  true,
+                      "dateText":  "22 Apr 2026",
+                      "startTime":  "6:00pm",
+                      "cost":  "Free",
+                      "sortDate":  "2026-04-22T00:00:00.0000000+01:00",
+                      "status":  "Free",
+                      "meta":  [
+
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/writing-about-place-and-belonging-with-julie-carter/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/04/Julie-Carter-1-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/eb03ff1f26127966c5d06ffff5dd1fd160eaaf76.jpg",
+                      "qrLocal":  "cache/qr/cc18eeda42d5ecd4ca9c7b85ce62f6a78babfd5b.png"
+                  },
+                  {
+                      "title":  "Dance Your Heart Out",
+                      "category":  "Adult Workshops and Activities",
+                      "isClass":  true,
+                      "dateText":  "23 Apr 2026",
+                      "startTime":  "9:30am",
+                      "cost":  null,
+                      "sortDate":  "2026-04-23T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+                                   "Saturdays, 9:30am-11am",
+                                   "50+"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/dance-your-heart-out/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2024/12/Untitled-1620-x-1080-px-1-aspect-ratio-16-9.jpg?resize=780%2C600\u0026gravity",
+                      "imageLocal":  "cache/images/bd2e1c25def2053a8addd200a78dde4fcb1321ea.jpg",
+                      "qrLocal":  "cache/qr/fce70b123da65baad6befb275707be7a394dee98.png"
+                  },
+                  {
+                      "title":  "Enamel Jewellery Workshop",
+                      "category":  "Adult Workshops and Activities",
+                      "isClass":  true,
+                      "dateText":  "23 Apr 2026",
+                      "startTime":  null,
+                      "cost":  null,
+                      "sortDate":  "2026-04-23T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/enamel-jewellery-workshop/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2025/12/enamel-powder-torch-firing-aspect-ratio-16-9.jpg?resize=520%2C400\u0026gravity",
+                      "imageLocal":  "cache/images/f7ad2ddc12b14a0796980384eda25a42f7b583b0.jpg",
+                      "qrLocal":  "cache/qr/c539ee0a2ce086f5e7f8ad0186aee7f3480d8943.png"
+                  },
+                  {
+                      "title":  "Washington Young Film Makers Collective",
+                      "category":  "Children and Young People\u0027s Activities",
+                      "isClass":  true,
+                      "dateText":  "23 Apr 2026",
+                      "startTime":  "6pm",
+                      "cost":  "Free",
+                      "sortDate":  "2026-04-23T00:00:00.0000000+01:00",
+                      "status":  "Free",
+                      "meta":  [
+                                   "Thursdays (Fortnightly), 6pm-8pm",
+                                   "11-19"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/washington-young-film-makers-collective/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/03/Washington-Young-Film-Makers-Collective-1-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/365c2f38b2970c8d0406c0b90649876b730e5ffe.jpg",
+                      "qrLocal":  "cache/qr/f6161b53115c9d45ee481a34e73304b53529d1c8.png"
+                  },
+                  {
+                      "title":  "Oil Painting",
+                      "category":  "Adult Workshops and Activities",
+                      "isClass":  true,
+                      "dateText":  "24 Apr 2026",
+                      "startTime":  "9:30am",
+                      "cost":  null,
+                      "sortDate":  "2026-04-24T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+                                   "Fridays, 9:30am-11:30am"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/oil-painting-classes/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2024/08/TOF_3573-copy-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/7c96fe437f2bb711ae0330ff98a732f092930e8e.jpg",
+                      "qrLocal":  "cache/qr/1693e761670f4c475c28fb57e4bdd23cc3c96874.png"
                   },
                   {
                       "title":  "Patrick Monahan - The Good, The Pat \u0026 The Ugly",
@@ -212,11 +290,12 @@
                       "sortDate":  "2026-04-24T00:00:00.0000000+01:00",
                       "status":  "",
                       "meta":  [
-                                   "Washy Comedy Fest"
+
                                ],
                       "link":  "https://www.sunderlandculture.org.uk/whats-on/patrick-monahan-the-good-the-pat-the-ugly/",
                       "image":  "https://images.sunderlandculture.org.uk/uploads/2025/12/Patrick-Monahan.jpg?resize=1287%2C990\u0026gravity",
-                      "imageLocal":  "cache/images/6a89e0ab34de391249ecf286908e2cff4d3249a2.jpg"
+                      "imageLocal":  "cache/images/6a89e0ab34de391249ecf286908e2cff4d3249a2.jpg",
+                      "qrLocal":  "cache/qr/74deb44564051b05f784a02be67c7d616e317b45.png"
                   },
                   {
                       "title":  "Present Continuous, Present Imperfect",
@@ -228,30 +307,116 @@
                       "sortDate":  "2026-04-25T00:00:00.0000000+01:00",
                       "status":  "Free",
                       "meta":  [
-                                   "15 – 25 Apr 2026",
-                                   "Broken"
+                                   "21 – 25 Apr 2026"
                                ],
                       "link":  "https://www.sunderlandculture.org.uk/whats-on/present-continuous-present-imperfect/",
                       "image":  "https://images.sunderlandculture.org.uk/uploads/2025/12/Home-Surveillance-web-aspect-ratio-16-9.jpg?resize=520%2C400\u0026gravity",
-                      "imageLocal":  "cache/images/02868b4e36f89916efc6db62d8916bc0eaad6d60.jpg"
+                      "imageLocal":  "cache/images/02868b4e36f89916efc6db62d8916bc0eaad6d60.jpg",
+                      "qrLocal":  "cache/qr/668e582da9dfe15f5b7de1639d411e5067752f79.png"
                   },
                   {
-                      "title":  "Mr Drayton\u0027s Rock Docs: The Wall",
+                      "title":  "Right Track",
+                      "category":  "Children and Young People\u0027s Activities",
+                      "isClass":  true,
+                      "dateText":  "25 Apr 2026",
+                      "startTime":  "10:30am",
+                      "cost":  "Free",
+                      "sortDate":  "2026-04-25T00:00:00.0000000+01:00",
+                      "status":  "Free",
+                      "meta":  [
+                                   "Saturdays, 10:30am-12:30pm",
+                                   "11-19"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/right-track/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2024/08/Right-Track-scaled-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/dc12bbdc2d5160b2ec8534d526c51585fc258615.jpg",
+                      "qrLocal":  "cache/qr/a2c699307ebfe05e686a17afcd78bfb8427d5e64.png"
+                  },
+                  {
+                      "title":  "Saturday Art Club - Morning",
+                      "category":  "Children and Young People\u0027s Activities",
+                      "isClass":  true,
+                      "dateText":  "25 Apr 2026",
+                      "startTime":  "10:15am",
+                      "cost":  null,
+                      "sortDate":  "2026-04-25T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+                                   "Saturdays, 10:15am-12:15pm",
+                                   "8+"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/saturday-art-club-morning/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/03/Saturday-Art-Club-scaled-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/132af75cd96a056321593b0d8dc4a448b38fc805.jpg",
+                      "qrLocal":  "cache/qr/07fcdf9bdda0ee3f1a5fde4a36c5320290ff3226.png"
+                  },
+                  {
+                      "title":  "Washington Youth Theatre (Ages 8-12)",
+                      "category":  "Children and Young People\u0027s Activities",
+                      "isClass":  true,
+                      "dateText":  "25 Apr 2026",
+                      "startTime":  "10am",
+                      "cost":  null,
+                      "sortDate":  "2026-04-25T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+                                   "Saturdays, 10am-12pm"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/washington-youth-theatre-ages-8-12/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2024/07/Washington-Youth-Theatre-8-12.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/84df10d79fc72e904542cc1994b289dde82a1f2e.jpg",
+                      "qrLocal":  "cache/qr/b2ef11422db564db04f31dd7828cbda233fa6545.png"
+                  },
+                  {
+                      "title":  "Midnight Run + Introduction by Ben Crompton",
                       "category":  "Films",
                       "isClass":  false,
-                      "dateText":  "6 May 2026",
+                      "dateText":  "30 Apr 2026",
+                      "startTime":  "7:00pm",
+                      "cost":  null,
+                      "sortDate":  "2026-04-30T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+                                   "18+"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/midnight-run-introduction-by-ben-crompton/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/04/Midnight-Run.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/c4efdb803095ceaba07c44c286b6049e23ad9b22.jpg",
+                      "qrLocal":  "cache/qr/b637824f929c395e21f11f94f979c469023316ed.png"
+                  },
+                  {
+                      "title":  "I Swear",
+                      "category":  "Films",
+                      "isClass":  false,
+                      "dateText":  "06 May 2026",
                       "startTime":  "1:00pm",
                       "cost":  null,
                       "sortDate":  "2026-05-06T00:00:00.0000000+01:00",
                       "status":  "",
                       "meta":  [
-                                   "06 May 2026",
-                                   "15+",
-                                   "28 May 2026"
+                                   "15+"
                                ],
-                      "link":  "https://www.sunderlandculture.org.uk/whats-on/i-swear/#matinees",
-                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/03/The-Wall-aspect-ratio-16-9.jpg?resize=780%2C600\u0026gravity",
-                      "imageLocal":  "cache/images/402dfa8524510e45e1d909ffccc0cb73bb042edc.jpg"
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/i-swear/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/03/I-Swear.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/5e8d26a43b42ee2a7f590dc04786dc1aa3bb0dca.jpg",
+                      "qrLocal":  "cache/qr/1ac62b11d4c5ca97c519a2cfcb87ec61e06d66aa.png"
+                  },
+                  {
+                      "title":  "Take Flight",
+                      "category":  "Theatre and Performance",
+                      "isClass":  false,
+                      "dateText":  "14 May 2026",
+                      "startTime":  "11:00am",
+                      "cost":  null,
+                      "sortDate":  "2026-05-14T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+                                   "For Babies and Toddlers 0 – 2 years"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/take-flight/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2025/12/055_Take-Flight_web-aspect-ratio-16-9.jpg?resize=780%2C600\u0026gravity",
+                      "imageLocal":  "cache/images/037121b206b51b325be76d54f85a2ba20360d4aa.jpg",
+                      "qrLocal":  "cache/qr/165f7987f4e33dce7fece851fc2b028f43c630f7.png"
                   },
                   {
                       "title":  "Pioneering Sound Women at the BBC and Beyond",
@@ -267,7 +432,8 @@
                                ],
                       "link":  "https://www.sunderlandculture.org.uk/whats-on/pioneering-sound-women-at-the-bbc-and-beyond/",
                       "image":  "https://images.sunderlandculture.org.uk/uploads/2026/04/Daphne-Oram.jpg?resize=1287%2C990\u0026gravity",
-                      "imageLocal":  "cache/images/c9c2ccf7f4f4627b688b3979b614940857e73063.jpg"
+                      "imageLocal":  "cache/images/c9c2ccf7f4f4627b688b3979b614940857e73063.jpg",
+                      "qrLocal":  "cache/qr/9156e1fefd015d47c462aa32a6684e2adbb594c0.png"
                   },
                   {
                       "title":  "Kerris: Getting On",
@@ -279,11 +445,29 @@
                       "sortDate":  "2026-05-21T00:00:00.0000000+01:00",
                       "status":  "",
                       "meta":  [
-                                   "Babes In Arms Comedy Club"
+
                                ],
                       "link":  "https://www.sunderlandculture.org.uk/whats-on/kerris-getting-on/",
                       "image":  "https://images.sunderlandculture.org.uk/uploads/2026/01/Kerris-aspect-ratio-16-9.jpg?resize=780%2C600\u0026gravity",
-                      "imageLocal":  "cache/images/7994149e998153f66f62f3dd97657479a9f4f0e5.jpg"
+                      "imageLocal":  "cache/images/7994149e998153f66f62f3dd97657479a9f4f0e5.jpg",
+                      "qrLocal":  "cache/qr/993b3eab50050408888f5614a0e33b9daf95c78e.png"
+                  },
+                  {
+                      "title":  "Babes In Arms Comedy Club",
+                      "category":  "Comedy",
+                      "isClass":  false,
+                      "dateText":  "22 May 2026",
+                      "startTime":  "1:00pm",
+                      "cost":  null,
+                      "sortDate":  "2026-05-22T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/babes-in-arms-comedy-club/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/01/Nicola-scaled-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/6af1b759965f3e214256886e9094a314a585984e.jpg",
+                      "qrLocal":  "cache/qr/b77baa91d94d2adb3ab566695fe3ceae3ba91a6f.png"
                   },
                   {
                       "title":  "Elaine Robertson: Delulu",
@@ -295,11 +479,46 @@
                       "sortDate":  "2026-05-22T00:00:00.0000000+01:00",
                       "status":  "",
                       "meta":  [
-                                   "Lee Kyle: Giant Comedy Show For Families Who Aren\u0027t Boring"
+
                                ],
                       "link":  "https://www.sunderlandculture.org.uk/whats-on/elaine-robertson-delulu/",
                       "image":  "https://images.sunderlandculture.org.uk/uploads/2026/01/Elaine-Robertson-aspect-ratio-16-9.png?resize=780%2C600\u0026gravity",
-                      "imageLocal":  "cache/images/57fd125a7163786f5614d5540eae51bef46ce56f.png"
+                      "imageLocal":  "cache/images/57fd125a7163786f5614d5540eae51bef46ce56f.png",
+                      "qrLocal":  "cache/qr/29f6c6909baae382d603ab8bf842e9df9a63a333.png"
+                  },
+                  {
+                      "title":  "Lee Kyle: Giant Comedy Show For Families Who Aren\u0027t Boring",
+                      "category":  "Comedy",
+                      "isClass":  false,
+                      "dateText":  "23 May 2026",
+                      "startTime":  "2:00pm",
+                      "cost":  null,
+                      "sortDate":  "2026-05-23T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/lee-kyle-giant-comedy-show-for-families-who-arent-boring/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/01/Lee-balloons2-scaled-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/90f0e65cd3266980ef178cd910ff4c86f33f6d0e.jpg",
+                      "qrLocal":  "cache/qr/4e1482ebfc2ebc62a56c1ab4302afd70b64f8736.png"
+                  },
+                  {
+                      "title":  "Washy Comedy Fest",
+                      "category":  "Comedy",
+                      "isClass":  false,
+                      "dateText":  "23 May 2026",
+                      "startTime":  null,
+                      "cost":  null,
+                      "sortDate":  "2026-05-23T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+                                   "21 – 23 May 2026"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/washy-comedy-fest/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/01/Washy-Comedy-Fest-web-banner-1-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/6ec176e78fdb0b3778ce8176e07da10f35632ea9.jpg",
+                      "qrLocal":  "cache/qr/b8e36614f23975a2d4ddd278b065c59bb1685fcc.png"
                   },
                   {
                       "title":  "Long Day\u0027s Journey Into Night",
@@ -311,45 +530,114 @@
                       "sortDate":  "2026-05-27T00:00:00.0000000+01:00",
                       "status":  "",
                       "meta":  [
-                                   "Sherlock Holmes and The Sting of the Scorpion"
+
                                ],
                       "link":  "https://www.sunderlandculture.org.uk/whats-on/long-days-journey-into-night/",
                       "image":  "https://images.sunderlandculture.org.uk/uploads/2026/01/LDJ_A4_Landscape_notext-scaled-e1768841171925-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
-                      "imageLocal":  "cache/images/4e3a8ee30804441814fb20f4c966de6244e6e2c7.jpg"
+                      "imageLocal":  "cache/images/4e3a8ee30804441814fb20f4c966de6244e6e2c7.jpg",
+                      "qrLocal":  "cache/qr/b3e5f6e484240ad973d4265e9367f4e1be7d6d1a.png"
                   },
                   {
-                      "title":  "Heritage Reels: Iron Ladies",
+                      "title":  "Mr Drayton\u0027s Rock Docs: The Wall",
                       "category":  "Films",
                       "isClass":  false,
-                      "dateText":  "3 Jun 2026",
+                      "dateText":  "28 May 2026",
+                      "startTime":  "7:00pm",
+                      "cost":  null,
+                      "sortDate":  "2026-05-28T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/mr-draytons-rock-docs-the-wall/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/03/The-Wall-aspect-ratio-16-9.jpg?resize=780%2C600\u0026gravity",
+                      "imageLocal":  "cache/images/402dfa8524510e45e1d909ffccc0cb73bb042edc.jpg",
+                      "qrLocal":  "cache/qr/0738a2f7a3a2d7eda0b9c2455cf508527e70cba6.png"
+                  },
+                  {
+                      "title":  "Song Sung Blue",
+                      "category":  "Films",
+                      "isClass":  false,
+                      "dateText":  "03 Jun 2026",
                       "startTime":  "1:00pm",
                       "cost":  null,
                       "sortDate":  "2026-06-03T00:00:00.0000000+01:00",
                       "status":  "",
                       "meta":  [
-                                   "03 Jun 2026",
                                    "12+"
                                ],
-                      "link":  "https://www.sunderlandculture.org.uk/whats-on/song-sung-blue/#matinees",
-                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/03/Iron-Ladies-2.jpg?resize=1287%2C990\u0026gravity",
-                      "imageLocal":  "cache/images/2234a47269818ef13695f14f3fa99ed68437a302.jpg"
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/song-sung-blue/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/03/Song-Sung-Blue.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/6dd2371eaba2ee27324e15e9e368474230d2c32f.jpg",
+                      "qrLocal":  "cache/qr/efdc332256de5485966aea9260d327a6aab5d920.png"
                   },
                   {
-                      "title":  "Nat Hardy: ISM - Art with Heart",
+                      "title":  "Sherlock Holmes and The Sting of the Scorpion",
+                      "category":  "Theatre and Performance",
+                      "isClass":  false,
+                      "dateText":  "04 Jun 2026",
+                      "startTime":  "7:30pm",
+                      "cost":  null,
+                      "sortDate":  "2026-06-04T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+                                   "Suitable for ages 12+"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/sherlock-holmes-and-the-sting-of-the-scorpion/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2025/12/Sherlock-Web-aspect-ratio-16-9.jpg?resize=520%2C400\u0026gravity",
+                      "imageLocal":  "cache/images/ff31043f34867d1739f35669afd4cab0909af02c.jpg",
+                      "qrLocal":  "cache/qr/e23e5f7d1ba91526dd0d2298716037f8ba5e5109.png"
+                  },
+                  {
+                      "title":  "Broken",
                       "category":  "Exhibitions",
                       "isClass":  false,
-                      "dateText":  "6 Jun 2026",
+                      "dateText":  "06 Jun 2026",
                       "startTime":  null,
                       "cost":  "Free",
                       "sortDate":  "2026-06-06T00:00:00.0000000+01:00",
                       "status":  "Free",
                       "meta":  [
-                                   "08 May – 06 Jun 2026",
-                                   "Stronger Seams : Beyond Coal"
+                                   "30 Apr – 06 Jun 2026"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/broken/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/02/gaza-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/2ffc0ccedf2b2db755e4d5fcd8801d72d8e09e28.jpg",
+                      "qrLocal":  "cache/qr/693fa213497d5bc135c371f8d034982d453e516c.png"
+                  },
+                  {
+                      "title":  "Nat Hardy: ISM - Art with Heart",
+                      "category":  "Exhibitions",
+                      "isClass":  false,
+                      "dateText":  "06 Jun 2026",
+                      "startTime":  null,
+                      "cost":  "Free",
+                      "sortDate":  "2026-06-06T00:00:00.0000000+01:00",
+                      "status":  "Free",
+                      "meta":  [
+                                   "08 May – 06 Jun 2026"
                                ],
                       "link":  "https://www.sunderlandculture.org.uk/whats-on/nat-hardy-ism-art-with-heart/",
                       "image":  "https://images.sunderlandculture.org.uk/uploads/2026/01/Natalie-Hardy-aspect-ratio-16-9.jpg?resize=780%2C600\u0026gravity",
-                      "imageLocal":  "cache/images/79d3ba5bcbe8fb53dfd7bfe269f815fd701fd3d0.jpg"
+                      "imageLocal":  "cache/images/79d3ba5bcbe8fb53dfd7bfe269f815fd701fd3d0.jpg",
+                      "qrLocal":  "cache/qr/2bcbff21e9940956e41ca5cb4a22c8cdd9badd00.png"
+                  },
+                  {
+                      "title":  "Heritage Reels: Iron Ladies",
+                      "category":  "Films",
+                      "isClass":  false,
+                      "dateText":  "10 Jun 2026",
+                      "startTime":  "1:00pm",
+                      "cost":  null,
+                      "sortDate":  "2026-06-10T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/heritage-reels-iron-ladies/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/03/Iron-Ladies-2.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/2234a47269818ef13695f14f3fa99ed68437a302.jpg",
+                      "qrLocal":  "cache/qr/6f92bfad887b7ecacb243d18e8942ff1b72170cc.png"
                   },
                   {
                       "title":  "A Good Company of Musick: Royal Northern Sinfonia with Ben Lunn",
@@ -361,27 +649,115 @@
                       "sortDate":  "2026-06-17T00:00:00.0000000+01:00",
                       "status":  "",
                       "meta":  [
-                                   "The NE Street Band"
+
                                ],
                       "link":  "https://www.sunderlandculture.org.uk/whats-on/a-good-company-of-musick-royal-northern-sinfonia-with-ben-lunn/",
                       "image":  "https://images.sunderlandculture.org.uk/uploads/2025/12/Ben-Lunn.jpg?resize=1287%2C990\u0026gravity",
-                      "imageLocal":  "cache/images/6111db422d6afee4d13e5ff217762317ab076484.jpg"
+                      "imageLocal":  "cache/images/6111db422d6afee4d13e5ff217762317ab076484.jpg",
+                      "qrLocal":  "cache/qr/6969163fd7c56bb79a172e1b26c41248ac73fe21.png"
                   },
                   {
                       "title":  "H Is for Hawk",
                       "category":  "Films",
                       "isClass":  false,
-                      "dateText":  "1 Jul 2026",
+                      "dateText":  "01 Jul 2026",
                       "startTime":  "1:00pm",
                       "cost":  "Free",
                       "sortDate":  "2026-07-01T00:00:00.0000000+01:00",
                       "status":  "",
                       "meta":  [
-
+                                   "12+"
                                ],
                       "link":  "https://www.sunderlandculture.org.uk/whats-on/h-is-for-hawk/",
                       "image":  "https://images.sunderlandculture.org.uk/uploads/2026/03/H-Is-for-Hawk.jpg?resize=1287%2C990\u0026gravity",
-                      "imageLocal":  "cache/images/4b7bdccc73de3f835dccaef40518e9aff53fa4dc.jpg"
+                      "imageLocal":  "cache/images/4b7bdccc73de3f835dccaef40518e9aff53fa4dc.jpg",
+                      "qrLocal":  "cache/qr/d0664a3512cc289e7c84358ff81d9e7c818a4f6e.png"
+                  },
+                  {
+                      "title":  "Summer Craft \u0026 Makers Fair",
+                      "category":  "Special Events",
+                      "isClass":  false,
+                      "dateText":  "18 Jul 2026",
+                      "startTime":  "10am",
+                      "cost":  "Free",
+                      "sortDate":  "2026-07-18T00:00:00.0000000+01:00",
+                      "status":  "Free",
+                      "meta":  [
+
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/summer-craft-makers-fair-2/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/01/Summer-Craft-Makers-Fair-2026-Website-header-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/c618fa17c6268556d21da6389b0abfa3efab4bd7.jpg",
+                      "qrLocal":  "cache/qr/177a48f38ee42932bc9ea1ad1f974495ca8da313.png"
+                  },
+                  {
+                      "title":  "The NE Street Band",
+                      "category":  "Music",
+                      "isClass":  false,
+                      "dateText":  "24 Jul 2026",
+                      "startTime":  null,
+                      "cost":  null,
+                      "sortDate":  "2026-07-24T00:00:00.0000000+01:00",
+                      "status":  "",
+                      "meta":  [
+
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/the-ne-street-band/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2024/12/IMG_7778-aspect-ratio-16-9.jpeg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/6f108a9c5af3b7e2384c5fecf8ca5db588d691c4.jpeg",
+                      "qrLocal":  "cache/qr/e2ddea8b20f34f95ffb23e2c8303aa360533ef01.png"
+                  },
+                  {
+                      "title":  "Stronger Seams : Beyond Coal",
+                      "category":  "Exhibitions",
+                      "isClass":  false,
+                      "dateText":  "25 Jul 2026",
+                      "startTime":  null,
+                      "cost":  "Free",
+                      "sortDate":  "2026-07-25T00:00:00.0000000+01:00",
+                      "status":  "Free",
+                      "meta":  [
+                                   "19 Jun – 25 Jul 2026"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/stronger-seams-beyond-coal/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/01/1000013846-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/e514786f9f350ee5537cacaaeafeffe255c38d0f.jpg",
+                      "qrLocal":  "cache/qr/d5db97460d7b5dd8289eda5e777e454574736e03.png"
+                  },
+                  {
+                      "title":  "Azra Glow",
+                      "category":  "Theatre and Performance",
+                      "isClass":  false,
+                      "dateText":  "07 Nov 2026",
+                      "startTime":  "11:00am",
+                      "cost":  null,
+                      "sortDate":  "2026-11-07T00:00:00.0000000+00:00",
+                      "status":  "",
+                      "meta":  [
+                                   "Directed by Penella Bee",
+                                   "Suitable for ages 3+"
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/azra-glow-2/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2024/12/Panella-Bee-Dragon-with-Edited-Eyes-aspect-ratio-16-9.png?resize=780%2C600\u0026gravity",
+                      "imageLocal":  "cache/images/a11695c295d487ff803b5d26e8fae1a259b45698.png",
+                      "qrLocal":  "cache/qr/7727af1080fa7b6a31fbcd2d7636b7986007e74d.png"
+                  },
+                  {
+                      "title":  "Ready Steady 60s Show",
+                      "category":  "Music",
+                      "isClass":  false,
+                      "dateText":  "28 Nov 2026",
+                      "startTime":  "7:30pm",
+                      "cost":  null,
+                      "sortDate":  "2026-11-28T00:00:00.0000000+00:00",
+                      "status":  "",
+                      "meta":  [
+
+                               ],
+                      "link":  "https://www.sunderlandculture.org.uk/whats-on/ready-steady-60s-show/",
+                      "image":  "https://images.sunderlandculture.org.uk/uploads/2026/02/RS60s2-aspect-ratio-16-9.jpg?resize=1287%2C990\u0026gravity",
+                      "imageLocal":  "cache/images/452f5c2dcd39c938c29013122f6fa1eba996dfeb.jpg",
+                      "qrLocal":  "cache/qr/ec6e723df5e53d5c25b193ec85e88dcbbb085670.png"
                   }
               ],
     "lastError":  null

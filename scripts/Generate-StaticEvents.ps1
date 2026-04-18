@@ -10,6 +10,7 @@ $outputRoot = [System.IO.Path]::GetFullPath($OutputRoot)
 $imageRoot = Join-Path $outputRoot "cache\images"
 $qrRoot = Join-Path $outputRoot "cache\qr"
 $detailCache = @{}
+$fetchHelperPath = Join-Path $PSScriptRoot "fetch-url.mjs"
 $classCategories = @(
     "Adult Workshops and Activities",
     "Children and Young People's Activities"
@@ -29,6 +30,135 @@ $allowedSections = @(
 function Ensure-Directory([string]$Path) {
     if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
         $null = New-Item -ItemType Directory -Path $Path -Force
+    }
+}
+
+function Invoke-NodeFetch([string]$Url, [string]$OutFile) {
+    $nodeCommand = Get-Command node -ErrorAction SilentlyContinue
+    if ($null -eq $nodeCommand) {
+        throw "Node.js is required for the HTTP fallback, but 'node' was not found."
+    }
+    if (-not (Test-Path -LiteralPath $fetchHelperPath -PathType Leaf)) {
+        throw "Fetch helper not found at $fetchHelperPath"
+    }
+
+    $arguments = @($fetchHelperPath, $Url)
+    if (-not [string]::IsNullOrWhiteSpace($OutFile)) {
+        $arguments += @("--out", $OutFile)
+    }
+
+    $previousProxyValues = @{
+        HTTP_PROXY = $env:HTTP_PROXY
+        HTTPS_PROXY = $env:HTTPS_PROXY
+        ALL_PROXY = $env:ALL_PROXY
+        GIT_HTTP_PROXY = $env:GIT_HTTP_PROXY
+        GIT_HTTPS_PROXY = $env:GIT_HTTPS_PROXY
+    }
+
+    try {
+        $env:HTTP_PROXY = ""
+        $env:HTTPS_PROXY = ""
+        $env:ALL_PROXY = ""
+        $env:GIT_HTTP_PROXY = ""
+        $env:GIT_HTTPS_PROXY = ""
+        & $nodeCommand.Source @arguments
+        if ($LASTEXITCODE -ne 0) {
+            throw "Node fetch failed for $Url"
+        }
+    } finally {
+        foreach ($key in $previousProxyValues.Keys) {
+            $value = $previousProxyValues[$key]
+            if ($null -eq $value) {
+                Remove-Item ("Env:{0}" -f $key) -ErrorAction SilentlyContinue
+            } else {
+                Set-Item ("Env:{0}" -f $key) -Value $value
+            }
+        }
+    }
+}
+
+function Get-WebContent([string]$Url) {
+    $headers = @{
+        "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
+        "Accept-Language" = "en-GB,en;q=0.9"
+        "Referer" = $sourceUrl
+    }
+
+    $previousProxyValues = @{
+        HTTP_PROXY = $env:HTTP_PROXY
+        HTTPS_PROXY = $env:HTTPS_PROXY
+        ALL_PROXY = $env:ALL_PROXY
+        GIT_HTTP_PROXY = $env:GIT_HTTP_PROXY
+        GIT_HTTPS_PROXY = $env:GIT_HTTPS_PROXY
+    }
+
+    try {
+        $env:HTTP_PROXY = ""
+        $env:HTTPS_PROXY = ""
+        $env:ALL_PROXY = ""
+        $env:GIT_HTTP_PROXY = ""
+        $env:GIT_HTTPS_PROXY = ""
+
+        try {
+            return (Invoke-WebRequest -Uri $Url -UseBasicParsing -Headers $headers).Content
+        } catch {
+            $tempPath = [System.IO.Path]::GetTempFileName()
+            try {
+                Invoke-NodeFetch -Url $Url -OutFile $tempPath
+                return [System.IO.File]::ReadAllText($tempPath)
+            } finally {
+                if (Test-Path -LiteralPath $tempPath -PathType Leaf) {
+                    Remove-Item -LiteralPath $tempPath -Force -ErrorAction SilentlyContinue
+                }
+            }
+        }
+    } finally {
+        foreach ($key in $previousProxyValues.Keys) {
+            $value = $previousProxyValues[$key]
+            if ($null -eq $value) {
+                Remove-Item ("Env:{0}" -f $key) -ErrorAction SilentlyContinue
+            } else {
+                Set-Item ("Env:{0}" -f $key) -Value $value
+            }
+        }
+    }
+}
+
+function Download-WebFile([string]$Url, [string]$Destination) {
+    $headers = @{
+        "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
+        "Referer" = $sourceUrl
+    }
+
+    $previousProxyValues = @{
+        HTTP_PROXY = $env:HTTP_PROXY
+        HTTPS_PROXY = $env:HTTPS_PROXY
+        ALL_PROXY = $env:ALL_PROXY
+        GIT_HTTP_PROXY = $env:GIT_HTTP_PROXY
+        GIT_HTTPS_PROXY = $env:GIT_HTTPS_PROXY
+    }
+
+    try {
+        $env:HTTP_PROXY = ""
+        $env:HTTPS_PROXY = ""
+        $env:ALL_PROXY = ""
+        $env:GIT_HTTP_PROXY = ""
+        $env:GIT_HTTPS_PROXY = ""
+
+        try {
+            Invoke-WebRequest -Uri $Url -OutFile $Destination -UseBasicParsing -Headers $headers
+        } catch {
+            Invoke-NodeFetch -Url $Url -OutFile $Destination
+        }
+    } finally {
+        foreach ($key in $previousProxyValues.Keys) {
+            $value = $previousProxyValues[$key]
+            if ($null -eq $value) {
+                Remove-Item ("Env:{0}" -f $key) -ErrorAction SilentlyContinue
+            } else {
+                Set-Item ("Env:{0}" -f $key) -Value $value
+            }
+        }
     }
 }
 
@@ -168,10 +298,7 @@ function Save-Image([string]$Url) {
     $fileName = "{0}{1}" -f (Get-Sha1Hex $Url), $ext.ToLowerInvariant()
     $destination = Join-Path $imageRoot $fileName
     if (-not (Test-Path -LiteralPath $destination -PathType Leaf)) {
-        Invoke-WebRequest -Uri $Url -OutFile $destination -UseBasicParsing -Headers @{
-            "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
-            "Referer" = $sourceUrl
-        }
+        Download-WebFile -Url $Url -Destination $destination
     }
     return "cache/images/{0}" -f $fileName
 }
@@ -192,10 +319,7 @@ function Save-QrCode([string]$Url) {
 
     foreach ($providerUrl in $providers) {
         try {
-            Invoke-WebRequest -Uri $providerUrl -OutFile $destination -UseBasicParsing -Headers @{
-                "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
-                "Referer" = $sourceUrl
-            }
+            Download-WebFile -Url $providerUrl -Destination $destination
             if (Test-Path -LiteralPath $destination -PathType Leaf) {
                 return "cache/qr/{0}" -f $fileName
             }
@@ -229,6 +353,11 @@ function Get-BestImageUrl([string]$Html) {
 }
 
 function Get-CardLink([string]$Html) {
+    $permalinkMatch = [regex]::Match($Html, '(?is)<a[^>]+class="[^"]*\bc-event-card__permalink\b[^"]*"[^>]+href="([^"]+)"')
+    if ($permalinkMatch.Success) {
+        return Get-AbsoluteUrl $permalinkMatch.Groups[1].Value
+    }
+
     $matches = [regex]::Matches($Html, '(?is)<a[^>]+href="([^"]+)"[^>]*>')
     $urls = @()
     foreach ($match in $matches) {
@@ -245,16 +374,27 @@ function Get-CardLink([string]$Html) {
     return ($urls | Select-Object -First 1)
 }
 
+function Get-CardBlocks([string]$SectionHtml) {
+    $containerMatches = [regex]::Matches($SectionHtml, '(?is)<div[^>]+class="[^"]*\bc-col-events-block__event-card-container\b[^"]*"[^>]*>')
+    if ($containerMatches.Count -gt 0) {
+        $blocks = New-Object System.Collections.Generic.List[string]
+        for ($index = 0; $index -lt $containerMatches.Count; $index++) {
+            $start = $containerMatches[$index].Index
+            $end = if ($index + 1 -lt $containerMatches.Count) { $containerMatches[$index + 1].Index } else { $SectionHtml.Length }
+            $blocks.Add($SectionHtml.Substring($start, $end - $start))
+        }
+        return @($blocks)
+    }
+
+    return @([regex]::Matches($SectionHtml, '(?is)<a\b[^>]*>.*?<h3[^>]*>.*?</h3>.*?</a>') | ForEach-Object { $_.Value })
+}
+
 function Get-EventDetails([string]$Url) {
     if ([string]::IsNullOrWhiteSpace($Url)) { return $null }
     if ($detailCache.ContainsKey($Url)) { return $detailCache[$Url] }
     try {
-        $response = Invoke-WebRequest -Uri $Url -UseBasicParsing -Headers @{
-            "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
-            "Accept-Language" = "en-GB,en;q=0.9"
-            "Referer" = $sourceUrl
-        }
-        $lines = Split-Lines (Convert-ToPlainText $response.Content)
+        $content = Get-WebContent -Url $Url
+        $lines = Split-Lines (Convert-ToPlainText $content)
         $dateText = $null
         $startTime = $null
         $cost = $null
@@ -273,14 +413,14 @@ function Get-EventDetails([string]$Url) {
         if (-not $dateText) { $dateText = Get-DateTextFromLines $lines }
         if (-not $startTime) { $startTime = Get-StartTimeFromLines $lines }
         if (-not $cost) { $cost = Get-CostFromLines $lines @() }
-        if (($response.Content -match '"startDate"\s*:\s*"([^"]+)"') -and (-not $dateText -or -not $startTime)) {
+        if (($content -match '"startDate"\s*:\s*"([^"]+)"') -and (-not $dateText -or -not $startTime)) {
             $parsed = [datetime]::MinValue
             if ([datetime]::TryParse($Matches[1], [ref]$parsed)) {
                 if (-not $dateText) { $dateText = $parsed.ToString("dd MMM yyyy") }
                 if (-not $startTime -and $Matches[1] -match 'T(?!00:00)(?!00:00:00)\d{2}:\d{2}') { $startTime = $parsed.ToString("h:mmtt").ToLowerInvariant().Replace(":00", "") }
             }
         }
-        if (-not $cost -and (($response.Content -match '"price"\s*:\s*"?(0|[0-9]+(?:\.[0-9]{2})?)"?' ) -or ($response.Content -match '"lowPrice"\s*:\s*"?(0|[0-9]+(?:\.[0-9]{2})?)"?'))) {
+        if (-not $cost -and (($content -match '"price"\s*:\s*"?(0|[0-9]+(?:\.[0-9]{2})?)"?' ) -or ($content -match '"lowPrice"\s*:\s*"?(0|[0-9]+(?:\.[0-9]{2})?)"?'))) {
             $cost = if ($Matches[1] -eq "0") { "Free" } else { ("{0}{1}" -f [char]0x00A3, $Matches[1].TrimEnd("0").TrimEnd(".")) }
         }
         $detailCache[$Url] = [pscustomobject]@{ dateText = $dateText; startTime = $startTime; cost = $cost }
@@ -294,37 +434,38 @@ Ensure-Directory $outputRoot
 Reset-Directory $imageRoot
 Reset-Directory $qrRoot
 
-$response = Invoke-WebRequest -Uri $sourceUrl -UseBasicParsing -Headers @{
-    "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
-    "Accept-Language" = "en-GB,en;q=0.9"
-}
+$sourceContent = Get-WebContent -Url $sourceUrl
 
 $results = New-Object System.Collections.Generic.List[object]
-$sections = [regex]::Matches($response.Content, '(?is)<h2[^>]*>(.*?)</h2>')
+$sections = [regex]::Matches($sourceContent, '(?is)<h2[^>]*>(.*?)</h2>')
 for ($i = 0; $i -lt $sections.Count; $i++) {
     $sectionTitle = Normalize-Whitespace $sections[$i].Groups[1].Value
     $sectionTitle = $sectionTitle.Replace("&", "and")
     if ($allowedSections -notcontains $sectionTitle) { continue }
     $start = $sections[$i].Index + $sections[$i].Length
-    $end = if ($i + 1 -lt $sections.Count) { $sections[$i + 1].Index } else { $response.Content.Length }
-    $sectionHtml = $response.Content.Substring($start, $end - $start)
-    $cards = [regex]::Matches($sectionHtml, '(?is)<a\b[^>]*>.*?<h3[^>]*>.*?</h3>.*?</a>')
+    $end = if ($i + 1 -lt $sections.Count) { $sections[$i + 1].Index } else { $sourceContent.Length }
+    $sectionHtml = $sourceContent.Substring($start, $end - $start)
+    $cards = Get-CardBlocks -SectionHtml $sectionHtml
     foreach ($card in $cards) {
-        $titleMatch = [regex]::Match($card.Value, '(?is)<h3[^>]*>(.*?)</h3>')
+        $titleMatch = [regex]::Match($card, '(?is)<h3[^>]*>(.*?)</h3>')
         if (-not $titleMatch.Success) { continue }
         $title = Normalize-Whitespace $titleMatch.Groups[1].Value
         if (-not $title) { continue }
-        $eventLink = Get-CardLink $card.Value
-        $imageUrl = Get-BestImageUrl $card.Value
-        $lines = Split-Lines (Convert-ToPlainText $card.Value)
+        $eventLink = Get-CardLink $card
+        $imageUrl = Get-BestImageUrl $card
+        $lines = Split-Lines (Convert-ToPlainText $card)
         $badges = @("Free","Sold Out","Limited Availability") | Where-Object { $lines -contains $_ }
-        $dateText = Get-DateTextFromLines $lines
+        $listingDateText = Get-DateTextFromLines $lines
+        $dateText = $listingDateText
         $startTime = Get-StartTimeFromLines $lines
         $cost = Get-CostFromLines $lines $badges
         if ($eventLink) {
             $details = Get-EventDetails $eventLink
             if ($details) {
-                if ($details.dateText) { $dateText = $details.dateText }
+                if (-not $dateText -and $details.dateText) { $dateText = $details.dateText }
+                elseif ($dateText -and $details.dateText -and (Normalize-Whitespace $dateText) -ne (Normalize-Whitespace $details.dateText)) {
+                    Write-Host ("Keeping listing date '{0}' for '{1}' instead of conflicting detail-page date '{2}' from {3}" -f $dateText, $title, $details.dateText, $eventLink)
+                }
                 if ($details.startTime) { $startTime = $details.startTime }
                 if ($details.cost) { $cost = $details.cost }
             }
