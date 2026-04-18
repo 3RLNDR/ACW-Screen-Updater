@@ -34,6 +34,9 @@ const slideCounter = document.querySelector("#slideCounter");
 const slideTitle = document.querySelector("#slideTitle");
 const slideDate = document.querySelector("#slideDate");
 const slideDetails = document.querySelector("#slideDetails");
+const slideQrPanel = document.querySelector("#slideQrPanel");
+const slideQrImage = document.querySelector("#slideQrImage");
+const slideQrLink = document.querySelector("#slideQrLink");
 const slideProgress = document.querySelector("#slideProgress");
 const slideProgressBar = document.querySelector("#slideProgressBar");
 const keepAlivePulse = document.querySelector("#keepAlivePulse");
@@ -70,6 +73,52 @@ function normalizeAssetUrl(value) {
 
 function normalizeDisplayText(value) {
   return String(value || "").replace(/Â£/g, "\u00A3").trim();
+}
+
+function getValidEventUrl(value) {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    const url = new URL(value, window.location.href);
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return null;
+    }
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+function updateQrPanel(item) {
+  if (!slideQrPanel || !slideQrImage || !slideQrLink) {
+    return;
+  }
+
+  const eventUrl = getValidEventUrl(item?.link);
+  if (!eventUrl) {
+    slideQrPanel.hidden = true;
+    slideQrImage.hidden = true;
+    slideQrImage.removeAttribute("src");
+    slideQrImage.alt = "";
+    slideQrLink.removeAttribute("href");
+    slideQrLink.textContent = "";
+    return;
+  }
+
+  const qrUrl = new URL("https://api.qrserver.com/v1/create-qr-code/");
+  qrUrl.searchParams.set("size", "180x180");
+  qrUrl.searchParams.set("format", "svg");
+  qrUrl.searchParams.set("margin", "0");
+  qrUrl.searchParams.set("data", eventUrl);
+
+  slideQrPanel.hidden = false;
+  slideQrImage.hidden = false;
+  slideQrImage.src = qrUrl.toString();
+  slideQrImage.alt = `QR code for ${item.title || "event details"}`;
+  slideQrLink.href = eventUrl;
+  slideQrLink.textContent = eventUrl;
 }
 
 function escapeSvgText(value) {
@@ -265,6 +314,7 @@ function renderSlide(index) {
     pill.textContent = normalizeDisplayText(value);
     slideDetails.appendChild(pill);
   });
+  updateQrPanel(item);
   slideCounter.textContent = `${index + 1} / ${state.items.length}`;
   restartProgressBar();
   requestAnimationFrame(() => fitTitleToFiveLines());
