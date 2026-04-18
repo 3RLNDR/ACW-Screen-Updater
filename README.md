@@ -1,131 +1,217 @@
 # ACW Screen Updater
 
-This repository now contains two versions of the Arts Centre Washington display site:
+This project powers an Arts Centre Washington event display.
 
-- the main version is a GitHub Pages-friendly static site
-- the original local PowerShell server version is preserved in `backup-local-server/`
+It supports two ways of running:
 
-## Versions
+- a static site in `public/` for GitHub Pages
+- a live local PowerShell server for a Windows display machine
 
-### Main version: GitHub Pages
+The display pulls event information from the Sunderland Culture "What's On" page for Arts Centre Washington, normalises the event data, and shows it in two browser views:
 
-The root project is now designed for static hosting.
+- `public/index.html` for a dashboard-style control view
+- `public/fullscreen.html` for a rotating full-screen venue display
 
-It works by:
+## What is in this repository
 
-- generating `public/events.json`
-- downloading event images into `public/cache/images/`
-- deploying the `public/` folder to GitHub Pages
+The root project is now a hybrid working copy:
 
-The data refresh happens in GitHub Actions rather than in a long-running local server.
+- `scripts/Generate-StaticEvents.ps1` builds a static `public/events.json` file and downloads event artwork into `public/cache/images/`
+- `Start-AcwDisplay.ps1` runs a local HTTP server with a live `/api/events` endpoint and local image caching
+- `.github/workflows/deploy-pages.yml` publishes the `public/` folder to GitHub Pages
+- `backup-local-server/` keeps an older copy of the original local-server version as a fallback reference
 
-### Backup version: local PowerShell server
+So this is not just a GitHub Pages project and not just a local server project. The root contains both flows.
 
-The original setup is preserved in:
+## How the app works
 
-- `backup-local-server/`
+### Static mode
 
-That version still uses:
-
-- `Start-AcwDisplay.ps1`
-- `/api/events`
-- local image caching
-- a Windows PC running the PowerShell server continuously
-
-## GitHub Pages hosting
-
-Yes, this project can now be hosted on GitHub Pages.
-
-The deployment flow is:
+This is the GitHub Pages-friendly path.
 
 1. GitHub Actions runs `scripts/Generate-StaticEvents.ps1`
-2. The script scrapes Sunderland Culture
-3. It writes fresh event data to `public/events.json`
-4. It downloads event artwork into `public/cache/images/`
-5. GitHub Pages publishes the `public/` folder
+2. The script scrapes the Sunderland Culture Arts Centre Washington page
+3. It follows event detail pages to improve dates, start times, and prices
+4. It downloads event images into `public/cache/images/`
+5. It writes the final payload to `public/events.json`
+6. GitHub Pages serves the `public/` folder
 
-The included workflow is:
+In this mode the frontend reads from `events.json`.
 
-- `.github/workflows/deploy-pages.yml`
+### Live local mode
 
-It runs:
+This is the Windows display-machine path.
 
-- on pushes to `main`
-- manually with `workflow_dispatch`
-- once per day at 06:00 UTC on a schedule
+1. `Start-AcwDisplay.ps1` starts a small local HTTP server on `http://localhost:8080`
+2. The server scrapes Sunderland Culture on demand
+3. Results are cached in memory for the configured refresh window
+4. Remote images are cached locally under `cache/images/`
+5. The frontend reads live data from `/api/events`
 
-## Important limitation
+In this mode the local server also serves the files in `public/`.
 
-GitHub Pages is static hosting, so it does not run the PowerShell server.
+## Views
 
-That means:
+### Dashboard
 
-- there is no live `/api/events` endpoint on GitHub Pages
-- the site updates only when the GitHub Action runs and redeploys
-- the current schedule is once per day at 06:00 UTC
+`public/index.html` shows:
 
-You can still trigger a manual refresh at any time by running the workflow in GitHub Actions.
+- the current display mode
+- last refresh time
+- event count
+- controls for including or excluding classes and courses
+- links to the fullscreen display
+- a fullscreen theme picker
 
-## Frontend files
+The page refreshes data every 5 minutes and also supports manual refresh.
 
-- `public/index.html` dashboard view
-- `public/fullscreen.html` fullscreen slideshow
-- `public/app.js` dashboard logic
-- `public/fullscreen.js` fullscreen slideshow logic
-- `public/styles.css` styling and themes
-- `public/events.json` generated event data
+### Fullscreen display
 
-## Data generation
+`public/fullscreen.html` shows:
 
-The GitHub Pages version uses:
+- one event at a time
+- a rotating slideshow
+- event image or generated fallback poster artwork
+- category, title, date, time, and price
+- theme-controlled fullscreen styling
 
-- `scripts/Generate-StaticEvents.ps1`
+The default slide delay is 15 seconds, with a minimum allowed delay of 5 seconds.
 
-That script:
+## URL options
 
-- scrapes the Arts Centre Washington "What's On" page
-- follows event pages for better dates, start times, and prices
-- picks the largest available event image from listing markup
-- downloads images into `public/cache/images/`
-- writes a static JSON payload for the frontend
+The frontend supports a few useful query-string options:
 
-## Deploying to GitHub Pages
+- `?includeClasses=false` hides classes and courses
+- `?includeClasses=true` includes classes and courses
+- `?theme=heritage`
+- `?theme=midnight`
+- `?theme=evergreen`
+- `?theme=spotlight`
+- `?delay=15000` sets the fullscreen slide duration in milliseconds
+- `?showImages=true` on the dashboard allows remote image URLs when available
 
-1. Push this repository to GitHub.
-2. In GitHub, open `Settings > Pages`.
-3. Set the source to `GitHub Actions`.
-4. Push to `main` or run the workflow manually.
+Defaults:
 
-After that, GitHub will publish the site for you.
+- dashboard includes classes unless local storage says otherwise
+- fullscreen excludes classes unless `includeClasses=true` is supplied
+- fullscreen theme defaults to `heritage`
 
-## Local use
+## Data shape
 
-### GitHub Pages version
+Both the static generator and the live server produce the same general payload shape:
 
-To preview the static version locally, serve the `public/` folder through any local web server rather than opening the HTML files directly from disk.
+- `fetchedAt`
+- `includeClasses`
+- `sourceUrl`
+- `total`
+- `items`
+- `lastError`
 
-### Original local-server version
+Each event item includes fields such as:
 
-If you want the old setup with the built-in scraper server, use the copy in:
+- `title`
+- `category`
+- `isClass`
+- `dateText`
+- `startTime`
+- `cost`
+- `status`
+- `meta`
+- `link`
+- `image`
+- `imageLocal`
 
-- `backup-local-server/`
+## Running locally
 
-## Display modes
+### Option 1: run the live local server
 
-- Dashboard view: `index.html`
-- Fullscreen slideshow: `fullscreen.html`
-- Hide classes/courses: add `?includeClasses=false`
-- Include classes in fullscreen: add `?includeClasses=true`
-- Change slideshow delay: for example `?delay=15000`
+From the project root:
 
-Fullscreen defaults to:
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\Start-AcwDisplay.ps1
+```
 
-- hiding classes and courses
-- rotating one event at a time
-- a 15 second delay between events
+Optional parameters:
 
-## Notes
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\Start-AcwDisplay.ps1 -Port 8080 -RefreshMinutes 15
+```
 
-- The scraper uses the public Arts Centre Washington "What's On" page at Sunderland Culture.
-- If Sunderland Culture changes the page structure, `scripts/Generate-StaticEvents.ps1` may need updating.
-- The backup PowerShell version is intentionally kept separate so you can return to the old local-server workflow if needed.
+Then open:
+
+- `http://localhost:8080/`
+- `http://localhost:8080/fullscreen.html?includeClasses=false`
+
+There is also a helper launcher:
+
+- `Run-Live-Display.bat`
+
+Important: that batch file currently hardcodes `C:\Users\chris\OneDrive\Documents\ACW Screen Updater`. If the repo lives somewhere else, update the path before using it.
+
+### Option 2: generate static data locally
+
+Run:
+
+```powershell
+.\scripts\Generate-StaticEvents.ps1
+```
+
+This writes:
+
+- `public/events.json`
+- `public/cache/images/*`
+
+Then serve `public/` through any local web server.
+
+Example:
+
+```powershell
+python -m http.server 8000 --directory public
+```
+
+Then open:
+
+- `http://localhost:8000/`
+
+Important: opening the HTML files directly with `file://` does not load real event data. In direct file mode the frontend falls back to built-in preview items.
+
+## Deployment
+
+GitHub Pages deployment is defined in [deploy-pages.yml](/C:/Users/chris/Documents/ACW%20Screen%20Updater/.github/workflows/deploy-pages.yml).
+
+The workflow:
+
+- runs on pushes to `main`
+- supports manual runs through `workflow_dispatch`
+- runs daily at `06:00 UTC`
+- uses a Windows runner to build the static event payload
+- uploads the `public/` folder as the Pages artifact
+
+To use Pages:
+
+1. Push the repository to GitHub.
+2. In the repository settings, set Pages to use `GitHub Actions`.
+3. Let the workflow publish the `public/` folder.
+
+## Key files
+
+- [README.md](/C:/Users/chris/Documents/ACW%20Screen%20Updater/README.md)
+- [Start-AcwDisplay.ps1](/C:/Users/chris/Documents/ACW%20Screen%20Updater/Start-AcwDisplay.ps1)
+- [Run-Live-Display.bat](/C:/Users/chris/Documents/ACW%20Screen%20Updater/Run-Live-Display.bat)
+- [scripts/Generate-StaticEvents.ps1](/C:/Users/chris/Documents/ACW%20Screen%20Updater/scripts/Generate-StaticEvents.ps1)
+- [public/index.html](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/index.html)
+- [public/app.js](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/app.js)
+- [public/fullscreen.html](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/fullscreen.html)
+- [public/fullscreen.js](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/fullscreen.js)
+- [public/styles.css](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/styles.css)
+- [public/events.json](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/events.json)
+- [backup-local-server/](/C:/Users/chris/Documents/ACW%20Screen%20Updater/backup-local-server)
+
+## Notes and limitations
+
+- The scraper depends on the current HTML structure of the Sunderland Culture site. If that markup changes, parsing may need to be updated.
+- The static GitHub Pages version is not live in the server sense. It only updates when the generation workflow runs.
+- The live local server only supports `GET` requests.
+- The live server exposes `GET /api/events` and `GET /health`.
+- The live server stores its log in `server.log`.
+- Some older sample data in the frontend fallback arrays still contains mis-encoded pound signs (`Â£`), but the live/static data pipeline includes logic to normalise currency display.
