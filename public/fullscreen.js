@@ -32,6 +32,7 @@ const slideTitle = document.querySelector("#slideTitle");
 const slideDate = document.querySelector("#slideDate");
 const slideDetails = document.querySelector("#slideDetails");
 const keepAlivePulse = document.querySelector("#keepAlivePulse");
+const keepAliveVideo = document.querySelector("#keepAliveVideo");
 
 function buildApiUrl(force = false) {
   const apiUrl = new URL("/api/events", apiOrigin);
@@ -310,6 +311,39 @@ function startKeepAliveLoop() {
   state.keepAliveTimer = setInterval(emitKeepAlive, keepAliveMs);
 }
 
+async function startKeepAliveVideo() {
+  if (!keepAliveVideo || typeof HTMLCanvasElement === "undefined") {
+    return;
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 2;
+  canvas.height = 2;
+
+  const context = canvas.getContext("2d");
+  if (!context || typeof canvas.captureStream !== "function") {
+    return;
+  }
+
+  let frame = 0;
+  const drawFrame = () => {
+    frame += 1;
+    context.fillStyle = frame % 2 === 0 ? "#000000" : "#010101";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+  };
+
+  drawFrame();
+  setInterval(drawFrame, 1000);
+
+  try {
+    keepAliveVideo.srcObject = canvas.captureStream(1);
+    await keepAliveVideo.play();
+  } catch (error) {
+    keepAlivePulse.dataset.videoKeepAlive = `failed:${error.message}`;
+  }
+}
+
 loadEvents();
 startRefreshLoop();
 startKeepAliveLoop();
+startKeepAliveVideo();

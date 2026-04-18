@@ -8,6 +8,16 @@
 </head>
 <body class="fullscreen-body">
   <div id="keepAlivePulse" hidden aria-hidden="true"></div>
+  <video
+    id="keepAliveVideo"
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="auto"
+    aria-hidden="true"
+    style="position:fixed;left:0;top:0;width:1px;height:1px;opacity:0.01;pointer-events:none;z-index:-1;"
+  ></video>
   <main class="fullscreen-screen">
     <section class="fullscreen-stage">
       <div class="fullscreen-media">
