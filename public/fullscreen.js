@@ -33,6 +33,7 @@ const slideCategory = document.querySelector("#slideCategory");
 const slideCounter = document.querySelector("#slideCounter");
 const slideTitle = document.querySelector("#slideTitle");
 const slideDate = document.querySelector("#slideDate");
+const slideDateNote = document.querySelector("#slideDateNote");
 const slideDetails = document.querySelector("#slideDetails");
 const slideQrPanel = document.querySelector("#slideQrPanel");
 const slideQrImage = document.querySelector("#slideQrImage");
@@ -251,6 +252,33 @@ function normalizeCompareText(value) {
     .replace(/[^a-z0-9]+/g, "");
 }
 
+function isExhibition(item) {
+  return normalizeCompareText(item?.category) === "exhibitions";
+}
+
+function getExhibitionDateRange(item) {
+  const primaryMeta = Array.isArray(item?.meta) ? item.meta.find((value) => String(value || "").trim()) : "";
+  return normalizeDisplayText(primaryMeta);
+}
+
+function getSlideDateContent(item) {
+  const defaultDate = normalizeDisplayText(item?.dateText) || "Date to be confirmed";
+
+  if (!isExhibition(item)) {
+    return { primary: defaultDate, note: "" };
+  }
+
+  const exhibitionRange = getExhibitionDateRange(item);
+  if (!exhibitionRange) {
+    return { primary: defaultDate, note: "" };
+  }
+
+  return {
+    primary: exhibitionRange,
+    note: defaultDate ? `Open until ${defaultDate}` : ""
+  };
+}
+
 function setAvailabilityBadge(status) {
   const normalized = String(status || "").trim().toLowerCase();
   slideAvailability.hidden = true;
@@ -356,7 +384,12 @@ function renderSlide(index) {
   slideCategory.textContent = item.category || "Event";
   setAvailabilityBadge(item.status);
   slideTitle.textContent = item.title || "Untitled event";
-  slideDate.textContent = item.dateText || "Date to be confirmed";
+  const dateContent = getSlideDateContent(item);
+  slideDate.textContent = dateContent.primary;
+  if (slideDateNote) {
+    slideDateNote.hidden = !dateContent.note;
+    slideDateNote.textContent = dateContent.note;
+  }
   slideDetails.innerHTML = "";
   const detailValues = [item.category, item.startTime, item.cost].filter(Boolean);
   detailValues.forEach((value) => {

@@ -826,6 +826,13 @@ code {
   font-weight: 700;
 }
 
+.fullscreen-date-note {
+  margin: -0.45rem 0 0;
+  font-size: 1.1rem;
+  color: rgba(43, 53, 50, 0.78);
+  font-weight: 600;
+}
+
 @media (max-width: 1100px) {
   .fullscreen-stage {
     grid-template-columns: 1fr;
