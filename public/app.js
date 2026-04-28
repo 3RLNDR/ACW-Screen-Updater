@@ -10,10 +10,17 @@ const dataMode = isFileProtocol ? "preview" : (isLocalServer ? "server" : "stati
 const apiOrigin = isLocalServer ? window.location.origin : "http://localhost:8080";
 const assetBase = window.location.href;
 const fullscreenThemeStorageKey = "fullscreenTheme";
+const viewModeStorageKey = "eventPreviewViewMode";
+const supportedViewModes = ["card", "list"];
 
 const state = {
   includeClasses: defaultIncludeClasses,
   fullscreenTheme: params.get("theme") || localStorage.getItem(fullscreenThemeStorageKey) || "heritage",
+  viewMode: supportedViewModes.includes(params.get("view"))
+    ? params.get("view")
+    : (supportedViewModes.includes(localStorage.getItem(viewModeStorageKey))
+      ? localStorage.getItem(viewModeStorageKey)
+      : "card"),
   items: [],
   refreshTimer: null
 };
@@ -33,12 +40,18 @@ const fullscreenLink = document.querySelector("#fullscreenLink");
 const fullscreenAllLink = document.querySelector("#fullscreenAllLink");
 const fullscreenUrlDisplay = document.querySelector("#fullscreenUrlDisplay");
 const themeOptions = document.querySelector("#themeOptions");
+const viewModeOptions = document.querySelector("#viewModeOptions");
 
 const fullscreenThemes = [
   { id: "heritage", label: "Heritage", preview: ["#f3ede4", "#b14b2d"] },
   { id: "midnight", label: "Midnight", preview: ["#1f2a44", "#5d80b8"] },
   { id: "evergreen", label: "Evergreen", preview: ["#17352f", "#7ea07b"] },
   { id: "spotlight", label: "Spotlight", preview: ["#2f2b2b", "#d2a14c"] }
+];
+
+const viewModes = [
+  { id: "card", label: "Card view" },
+  { id: "list", label: "List view" }
 ];
 
 const posterClasses = {
@@ -334,6 +347,30 @@ function renderThemeOptions() {
   });
 }
 
+function applyViewMode() {
+  eventsGrid.dataset.view = state.viewMode;
+}
+
+function renderViewModeOptions() {
+  viewModeOptions.innerHTML = "";
+
+  viewModes.forEach((mode) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "view-mode-option";
+    button.dataset.view = mode.id;
+    button.setAttribute("aria-pressed", String(state.viewMode === mode.id));
+    button.textContent = mode.label;
+    button.addEventListener("click", () => {
+      state.viewMode = mode.id;
+      localStorage.setItem(viewModeStorageKey, mode.id);
+      renderViewModeOptions();
+      applyViewMode();
+    });
+    viewModeOptions.appendChild(button);
+  });
+}
+
 function updateFullscreenLink() {
   const eventsOnlyUrl = new URL("./fullscreen.html", window.location.href);
   eventsOnlyUrl.searchParams.set("includeClasses", "false");
@@ -362,6 +399,7 @@ function renderPayload(payload, sourceLabel) {
 function renderPage() {
   const page = state.items ?? [];
   eventsGrid.innerHTML = "";
+  applyViewMode();
 
   page.forEach((item) => {
     const fragment = template.content.cloneNode(true);
@@ -462,6 +500,8 @@ function startRefreshLoop() {
 
 setModeLabel();
 renderThemeOptions();
+renderViewModeOptions();
+applyViewMode();
 updateFullscreenLink();
 loadEvents();
 startRefreshLoop();
