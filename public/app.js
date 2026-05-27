@@ -1,3 +1,5 @@
+import { buildAssociationViewModel } from "./video-admin-model.mjs";
+
 const params = new URLSearchParams(window.location.search);
 const storedPreference = localStorage.getItem("includeClasses");
 const showRemoteImages = params.get("showImages") === "true";
@@ -8,6 +10,7 @@ const isFileProtocol = window.location.protocol === "file:";
 const isLocalServer = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 const dataMode = isFileProtocol ? "preview" : (isLocalServer ? "server" : "static");
 const apiOrigin = isLocalServer ? window.location.origin : "http://localhost:8080";
+const managementApiOrigin = window.location.origin;
 const assetBase = window.location.href;
 const fullscreenThemeStorageKey = "fullscreenTheme";
 const viewModeStorageKey = "eventPreviewViewMode";
@@ -22,6 +25,8 @@ const state = {
       ? localStorage.getItem(viewModeStorageKey)
       : "card"),
   items: [],
+  videos: [],
+  associations: {},
   refreshTimer: null
 };
 
@@ -41,6 +46,10 @@ const fullscreenAllLink = document.querySelector("#fullscreenAllLink");
 const fullscreenUrlDisplay = document.querySelector("#fullscreenUrlDisplay");
 const themeOptions = document.querySelector("#themeOptions");
 const viewModeOptions = document.querySelector("#viewModeOptions");
+const videoUploadForm = document.querySelector("#videoUploadForm");
+const videoUploadInput = document.querySelector("#videoUploadInput");
+const videoUploadStatus = document.querySelector("#videoUploadStatus");
+const videoAssociationList = document.querySelector("#videoAssociationList");
 
 const fullscreenThemes = [
   { id: "heritage", label: "Heritage", preview: ["#f3ede4", "#b14b2d"] },
@@ -80,6 +89,27 @@ refreshButton.addEventListener("click", () => {
   loadEvents(true);
 });
 
+if (videoUploadForm && videoUploadInput) {
+  videoUploadForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const file = videoUploadInput.files?.[0];
+    if (!file) {
+      videoUploadStatus.textContent = "Choose a video file first.";
+      return;
+    }
+
+    videoUploadStatus.textContent = `Uploading ${file.name}...`;
+    try {
+      await uploadVideo(file);
+      videoUploadStatus.textContent = `${file.name} uploaded.`;
+      videoUploadForm.reset();
+      await loadVideoAdminData();
+    } catch (error) {
+      videoUploadStatus.textContent = `Upload failed: ${error.message}`;
+    }
+  });
+}
+
 function buildApiUrl(force = false) {
   const apiUrl = new URL("/api/events", apiOrigin);
   apiUrl.searchParams.set("includeClasses", String(state.includeClasses));
@@ -95,6 +125,10 @@ function buildStaticDataUrl(force = false) {
     dataUrl.searchParams.set("_", Date.now().toString());
   }
   return dataUrl.toString();
+}
+
+function buildManagementUrl(pathname) {
+  return new URL(pathname, managementApiOrigin).toString();
 }
 
 function normalizeAssetUrl(value) {
@@ -385,6 +419,138 @@ function updateFullscreenLink() {
   fullscreenAllLink.href = allItemsUrl.toString();
 }
 
+async function fetchVideoLibrary() {
+  const response = await fetch(buildManagementUrl("/api/videos"), { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`Video library request failed with ${response.status}`);
+  }
+  const payload = await response.json();
+  return Array.isArray(payload.items) ? payload.items : [];
+}
+
+async function fetchAssociations() {
+  const response = await fetch(buildManagementUrl("/api/video-associations"), { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`Association request failed with ${response.status}`);
+  }
+  const payload = await response.json();
+  return payload.items && typeof payload.items === "object" ? payload.items : {};
+}
+
+async function uploadVideo(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await fetch(buildManagementUrl("/api/videos"), { method: "POST", body: formData });
+  if (!response.ok) {
+    throw new Error(`Upload failed with ${response.status}`);
+  }
+  return response.json();
+}
+
+async function saveVideoAssociation(eventId, videoId) {
+  const response = await fetch(buildManagementUrl(`/api/video-associations/${encodeURIComponent(eventId)}`), {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ videoId })
+  });
+  if (!response.ok) {
+    throw new Error(`Save failed with ${response.status}`);
+  }
+  return response.json();
+}
+
+async function clearVideoAssociation(eventId) {
+  const response = await fetch(buildManagementUrl(`/api/video-associations/${encodeURIComponent(eventId)}`), {
+    method: "DELETE"
+  });
+  if (!response.ok) {
+    throw new Error(`Clear failed with ${response.status}`);
+  }
+  return response.json();
+}
+
+function renderVideoAdmin() {
+  if (!videoAssociationList) {
+    return;
+  }
+
+  const viewModel = buildAssociationViewModel(state.items, state.videos, state.associations);
+  videoAssociationList.innerHTML = "";
+
+  if (!viewModel.length) {
+    videoAssociationList.innerHTML = '<p class="video-admin-empty">No events are available to pair yet.</p>';
+    return;
+  }
+
+  viewModel.forEach((row) => {
+    const article = document.createElement("article");
+    article.className = "video-association-row";
+
+    const details = document.createElement("div");
+    details.className = "video-association-event";
+    details.innerHTML = `
+      <strong>${row.title}</strong>
+      <span>${row.dateText}</span>
+    `;
+
+    const controls = document.createElement("div");
+    controls.className = "video-association-controls";
+
+    const select = document.createElement("select");
+    select.className = "video-association-select";
+    select.innerHTML = '<option value="">No linked video</option>';
+    row.options.forEach((option) => {
+      const optionElement = document.createElement("option");
+      optionElement.value = option.id;
+      optionElement.textContent = option.title;
+      if (option.id === row.selectedVideoId) {
+        optionElement.selected = true;
+      }
+      select.appendChild(optionElement);
+    });
+
+    select.addEventListener("change", async () => {
+      article.dataset.busy = "true";
+      try {
+        if (!select.value) {
+          await clearVideoAssociation(row.eventId);
+        } else {
+          await saveVideoAssociation(row.eventId, select.value);
+        }
+        state.associations = await fetchAssociations();
+        renderVideoAdmin();
+      } catch (error) {
+        videoUploadStatus.textContent = `Association update failed: ${error.message}`;
+      } finally {
+        article.dataset.busy = "false";
+      }
+    });
+
+    const status = document.createElement("span");
+    status.className = "video-association-status";
+    status.textContent = row.hasAssociation ? "Video linked" : "Slide only";
+
+    controls.append(select, status);
+    article.append(details, controls);
+    videoAssociationList.appendChild(article);
+  });
+}
+
+async function loadVideoAdminData() {
+  if (isFileProtocol || !videoAssociationList) {
+    return;
+  }
+
+  try {
+    const [videos, associations] = await Promise.all([fetchVideoLibrary(), fetchAssociations()]);
+    state.videos = videos;
+    state.associations = associations;
+    renderVideoAdmin();
+  } catch (error) {
+    videoUploadStatus.textContent = `Video management unavailable: ${error.message}`;
+  }
+}
+
 function renderPayload(payload, sourceLabel) {
   const payloadItems = Array.isArray(payload.items) ? payload.items : [];
   state.items = payloadItems.filter((item) => state.includeClasses || !item.isClass);
@@ -394,6 +560,7 @@ function renderPayload(payload, sourceLabel) {
   sourceStatus.textContent = sourceLabel;
 
   renderPage();
+  renderVideoAdmin();
 }
 
 function renderPage() {
@@ -504,4 +671,5 @@ renderViewModeOptions();
 applyViewMode();
 updateFullscreenLink();
 loadEvents();
+loadVideoAdminData();
 startRefreshLoop();

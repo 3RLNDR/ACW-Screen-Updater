@@ -1,5 +1,6 @@
 cache/
 public/cache/images/
+public/cache/videos/
 backup-local-server/cache/
 server.log
 .DS_Store
@@ -7,3 +8,6 @@ Thumbs.db
 gitdata/
 .gitdata/
 .git-broken*/
+data/
+__pycache__/
+.tmp/

@@ -2,8 +2,9 @@
 
 This project powers an Arts Centre Washington event display.
 
-It supports two ways of running:
+It supports three ways of running:
 
+- a Raspberry Pi-hosted Python service for production hosting, scheduled refreshes, and video management
 - a static site in `public/` for GitHub Pages
 - a live local PowerShell server for a Windows display machine
 
@@ -11,19 +12,32 @@ The display pulls event information from the Sunderland Culture "What's On" page
 
 - `public/index.html` for a dashboard-style control view
 - `public/fullscreen.html` for a rotating full-screen venue display
+- locally hosted promo videos that can be associated with event entries
 
 ## What is in this repository
 
 The root project is now a hybrid working copy:
 
+- `pi_display/` contains the Pi-native scraper, publisher, SQLite storage, and local web service
 - `scripts/Generate-StaticEvents.ps1` builds a static `public/events.json` file and downloads event artwork into `public/cache/images/`
 - `Start-AcwDisplay.ps1` runs a local HTTP server with a live `/api/events` endpoint and local image caching
+- `systemd/` contains example service and timer units for Raspberry Pi deployment
 - `.github/workflows/deploy-pages.yml` publishes the `public/` folder to GitHub Pages
 - `backup-local-server/` keeps an older copy of the original local-server version as a fallback reference
 
 So this is not just a GitHub Pages project and not just a local server project. The root contains both flows.
 
 ## How the app works
+
+### Raspberry Pi production mode
+
+This is now the preferred production path.
+
+1. `python -m pi_display.refresh` scrapes the Sunderland Culture source and writes `public/events.json` plus `public/slides.json`
+2. The Pi-hosted service serves the dashboard, fullscreen view, cached images, QR codes, and uploaded promo videos
+3. Uploaded video metadata and event-to-video associations are stored in `data/acw-display.sqlite3`
+4. The dashboard can upload local promo videos and link them to events
+5. The fullscreen screen plays `video -> event` whenever an association exists
 
 ### Static mode
 
@@ -62,6 +76,7 @@ In this mode the local server also serves the files in `public/`.
 - controls for including or excluding classes and courses
 - links to the fullscreen display
 - a fullscreen theme picker
+- a promo-video upload and event association panel when served by the Pi app
 
 The page refreshes data every 5 minutes and also supports manual refresh.
 
@@ -69,9 +84,10 @@ The page refreshes data every 5 minutes and also supports manual refresh.
 
 `public/fullscreen.html` shows:
 
-- one event at a time
-- a rotating slideshow
+- one slide at a time
+- a rotating slideshow of event slides and optional video slides
 - event image or generated fallback poster artwork
+- locally hosted promo videos when configured
 - category, title, date, time, and price
 - theme-controlled fullscreen styling
 
@@ -100,7 +116,7 @@ Defaults:
 
 ## Data shape
 
-Both the static generator and the live server produce the same general payload shape:
+Both the static generator and the Pi publisher produce the same general event payload shape:
 
 - `fetchedAt`
 - `includeClasses`
@@ -124,9 +140,34 @@ Each event item includes fields such as:
 - `imageLocal`
 - `qrLocal`
 
+The Pi flow also generates `public/slides.json`, where each entry has a `type` of either `event` or `video`.
+
 ## Running locally
 
-### Option 1: run the live local server
+Important: the Raspberry Pi-hosted version is now the primary production deployment target. GitHub Pages remains useful as a static fallback preview, and the local PowerShell server is intended as a testing and validation environment for the display experience.
+
+### Option 1: run the Raspberry Pi-style Python service
+
+From the project root:
+
+```powershell
+python -m pi_display.refresh
+python -m pi_display.web
+```
+
+Then open:
+
+- `http://localhost:8080/`
+- `http://localhost:8080/fullscreen.html?includeClasses=false`
+
+This path enables:
+
+- generated `events.json` and `slides.json`
+- local video uploads under `public/cache/videos/`
+- SQLite-backed event-to-video associations in `data/acw-display.sqlite3`
+- the dashboard video-management UI
+
+### Option 2: run the live local PowerShell server
 
 From the project root:
 
@@ -151,7 +192,7 @@ There is also a helper launcher:
 
 Important: that batch file currently hardcodes `C:\Users\chris\Documents\ACW Screen Updater`. If the repo lives somewhere else, update the path before using it.
 
-### Option 2: generate static data locally
+### Option 3: generate static data locally
 
 Run:
 
@@ -180,6 +221,35 @@ Important: opening the HTML files directly with `file://` does not load real eve
 
 ## Deployment
 
+### Raspberry Pi deployment
+
+Install dependencies:
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+The example `systemd/` units can be copied into `/etc/systemd/system/`:
+
+- `systemd/acw-display.service`
+- `systemd/acw-refresh.service`
+- `systemd/acw-refresh.timer`
+
+Typical enable flow on the Pi:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now acw-display.service
+sudo systemctl enable --now acw-refresh.timer
+```
+
+Operator workflow:
+
+1. Open the dashboard on the Pi-hosted service.
+2. Upload a promo video file.
+3. Choose the matching event from the association list.
+4. Open the fullscreen URL and confirm the video plays before the event slide.
+
 GitHub Pages deployment is defined in [deploy-pages.yml](/C:/Users/chris/Documents/ACW%20Screen%20Updater/.github/workflows/deploy-pages.yml).
 
 The workflow:
@@ -199,6 +269,7 @@ To use Pages:
 ## Key files
 
 - [README.md](/C:/Users/chris/Documents/ACW%20Screen%20Updater/README.md)
+- [pi_display/](/C:/Users/chris/Documents/ACW%20Screen%20Updater/pi_display)
 - [Start-AcwDisplay.ps1](/C:/Users/chris/Documents/ACW%20Screen%20Updater/Start-AcwDisplay.ps1)
 - [Run-Live-Display.bat](/C:/Users/chris/Documents/ACW%20Screen%20Updater/Run-Live-Display.bat)
 - [scripts/Generate-StaticEvents.ps1](/C:/Users/chris/Documents/ACW%20Screen%20Updater/scripts/Generate-StaticEvents.ps1)
@@ -208,11 +279,14 @@ To use Pages:
 - [public/fullscreen.js](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/fullscreen.js)
 - [public/styles.css](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/styles.css)
 - [public/events.json](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/events.json)
+- [public/slides.json](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/slides.json)
+- [systemd/](/C:/Users/chris/Documents/ACW%20Screen%20Updater/systemd)
 - [backup-local-server/](/C:/Users/chris/Documents/ACW%20Screen%20Updater/backup-local-server)
 
 ## Notes and limitations
 
 - The scraper depends on the current HTML structure of the Sunderland Culture site. If that markup changes, parsing may need to be updated.
+- The Python web service currently uses the standard-library `cgi` parser for uploads, which is deprecated in Python 3.13 and should be replaced during a future maintenance pass.
 - The static GitHub Pages version is not live in the server sense. It only updates when the generation workflow runs.
 - The live local server only supports `GET` requests.
 - The live server exposes `GET /api/events` and `GET /health`.

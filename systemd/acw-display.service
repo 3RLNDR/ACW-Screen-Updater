@@ -1,0 +1,11 @@
+[Unit]
+Description=ACW display web app
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/acw-screen-updater
+ExecStart=/usr/bin/python3 -m pi_display.web
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

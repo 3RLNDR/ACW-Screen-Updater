@@ -1,3 +1,5 @@
+import { getNextRenderableSlide } from "./slide-sequence.mjs";
+
 const params = new URLSearchParams(window.location.search);
 const isFileProtocol = window.location.protocol === "file:";
 const isLocalServer = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
@@ -6,7 +8,7 @@ const dataMode = forcedDataMode || (isFileProtocol ? "preview" : (isLocalServer 
 const includeClasses = params.get("includeClasses") === "true";
 const slideDelayMs = Math.max(5000, Number.parseInt(params.get("delay") || "15000", 10) || 15000);
 const keepAliveMs = Math.max(15000, Number.parseInt(params.get("keepAliveMs") || "30000", 10) || 30000);
-const apiOrigin = isLocalServer ? window.location.origin : "http://localhost:8080";
+const apiOrigin = window.location.origin;
 const assetBase = window.location.href;
 const fullscreenThemeStorageKey = "fullscreenTheme";
 const fullscreenTheme = params.get("theme") || localStorage.getItem(fullscreenThemeStorageKey) || "heritage";
@@ -15,17 +17,19 @@ document.body.dataset.fullscreenTheme = fullscreenTheme;
 localStorage.setItem(fullscreenThemeStorageKey, fullscreenTheme);
 
 const state = {
-  items: [],
+  slides: [],
   currentIndex: 0,
   rotateTimer: null,
   refreshTimer: null,
   keepAliveTimer: null,
   progressTimer: null,
-  progressStartedAt: 0
+  progressStartedAt: 0,
+  failedVideoIds: new Set()
 };
 
 const refreshMs = 5 * 60 * 1000;
 
+const slideVideo = document.querySelector("#slideVideo");
 const slideImage = document.querySelector("#slideImage");
 const slidePoster = document.querySelector("#slidePoster");
 const slideAvailability = document.querySelector("#slideAvailability");
@@ -44,7 +48,7 @@ const keepAlivePulse = document.querySelector("#keepAlivePulse");
 const keepAliveVideo = document.querySelector("#keepAliveVideo");
 
 function buildApiUrl(force = false) {
-  const apiUrl = new URL("/api/events", apiOrigin);
+  const apiUrl = new URL("/api/slides", apiOrigin);
   apiUrl.searchParams.set("includeClasses", String(includeClasses));
   if (force) {
     apiUrl.searchParams.set("_", Date.now().toString());
@@ -53,7 +57,7 @@ function buildApiUrl(force = false) {
 }
 
 function buildStaticDataUrl(force = false) {
-  const dataUrl = new URL("./events.json", window.location.href);
+  const dataUrl = new URL("./slides.json", window.location.href);
   if (force) {
     dataUrl.searchParams.set("_", Date.now().toString());
   }
@@ -73,7 +77,7 @@ function normalizeAssetUrl(value) {
 }
 
 function normalizeDisplayText(value) {
-  return String(value || "").replace(/Â£/g, "\u00A3").trim();
+  return String(value || "").replace(/Ã‚Â£/g, "\u00A3").trim();
 }
 
 function getValidEventUrl(value) {
@@ -214,10 +218,11 @@ function getFallbackItems() {
       isClass: false,
       dateText: "16 Apr 2026",
       startTime: "7pm",
-      cost: "£12",
+      cost: "\u00A312",
       status: "",
       meta: ["Suitable for ages 11+"],
-      imageLocal: null
+      imageLocal: null,
+      link: "https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/"
     },
     {
       title: "10CCLO",
@@ -225,10 +230,11 @@ function getFallbackItems() {
       isClass: false,
       dateText: "17 - 18 Apr 2026",
       startTime: "7:30pm",
-      cost: "£18",
+      cost: "\u00A318",
       status: "Limited Availability",
       meta: ["Live music performance"],
-      imageLocal: null
+      imageLocal: null,
+      link: "https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/"
     },
     {
       title: "Creative Sketchbook Club",
@@ -236,14 +242,34 @@ function getFallbackItems() {
       isClass: true,
       dateText: "20 Apr 2026",
       startTime: "6pm",
-      cost: "£8",
+      cost: "\u00A38",
       status: "",
       meta: ["Weekly creative class"],
-      imageLocal: null
+      imageLocal: null,
+      link: "https://www.sunderlandculture.org.uk/arts-centre-washington/whats-on/"
     }
   ];
 
   return items.filter((item) => includeClasses || !item.isClass);
+}
+
+function toEventSlide(item) {
+  return {
+    type: "event",
+    id: item.id || item.title || Math.random().toString(36).slice(2),
+    eventId: item.id || item.title || "",
+    title: item.title,
+    category: item.category,
+    dateText: item.dateText,
+    startTime: item.startTime,
+    cost: item.cost,
+    status: item.status,
+    meta: item.meta,
+    link: item.link,
+    imageLocal: item.imageLocal,
+    qrLocal: item.qrLocal,
+    isClass: item.isClass
+  };
 }
 
 function normalizeCompareText(value) {
@@ -338,12 +364,12 @@ function fitTitleToFiveLines() {
   }
 }
 
-function restartProgressBar() {
+function restartProgressBar(durationMs) {
   if (!slideProgress || !slideProgressBar) {
     return;
   }
 
-  const shouldAnimate = state.items.length > 1;
+  const shouldAnimate = state.slides.length > 1;
   slideProgress.hidden = !shouldAnimate;
   clearInterval(state.progressTimer);
 
@@ -357,23 +383,42 @@ function restartProgressBar() {
 
   state.progressTimer = setInterval(() => {
     const elapsed = Date.now() - state.progressStartedAt;
-    const progress = Math.max(2, Math.min(100, (elapsed / slideDelayMs) * 100));
+    const progress = Math.max(2, Math.min(100, (elapsed / durationMs) * 100));
     slideProgressBar.style.width = `${progress}%`;
   }, 100);
 }
 
-function renderSlide(index) {
-  if (!state.items.length) {
+function stopCurrentPlayback() {
+  clearTimeout(state.rotateTimer);
+  clearInterval(state.progressTimer);
+  if (slideVideo) {
+    slideVideo.pause();
+    slideVideo.onended = null;
+    slideVideo.onerror = null;
+    slideVideo.removeAttribute("src");
+    slideVideo.load();
+  }
+}
+
+function scheduleAdvance(durationMs) {
+  clearTimeout(state.rotateTimer);
+  restartProgressBar(durationMs);
+  if (state.slides.length <= 1) {
     return;
   }
+  state.rotateTimer = setTimeout(() => {
+    advanceToNextSlide();
+  }, durationMs);
+}
 
-  state.currentIndex = index;
-  const item = state.items[index];
+function renderEventSlide(index, item) {
   const imageSource = normalizeAssetUrl(item.imageLocal) || buildFallbackImage(item);
   const theme = getTheme(item.category, item.isClass);
 
-  slidePoster.style.background = `linear-gradient(135deg, ${theme.start}, ${theme.end})`;
+  slideVideo.hidden = true;
+  slidePoster.hidden = false;
   slideImage.hidden = false;
+  slidePoster.style.background = `linear-gradient(135deg, ${theme.start}, ${theme.end})`;
   slideImage.src = imageSource;
   slideImage.alt = item.title || "Event artwork";
   slideImage.onerror = () => {
@@ -399,31 +444,129 @@ function renderSlide(index) {
     slideDetails.appendChild(pill);
   });
   updateQrPanel(item);
-  slideCounter.textContent = `${index + 1} / ${state.items.length}`;
-  restartProgressBar();
+  slideCounter.textContent = `${index + 1} / ${state.slides.length}`;
   requestAnimationFrame(() => fitTitleToFiveLines());
+  scheduleAdvance(slideDelayMs);
 }
 
-function startRotation() {
-  clearInterval(state.rotateTimer);
-  if (state.items.length <= 1) {
+function renderVideoSlide(index, slide) {
+  const durationMs = Math.max(5000, (Number(slide.durationSeconds) || 20) * 1000);
+  slideVideo.hidden = false;
+  slidePoster.hidden = true;
+  slideImage.hidden = true;
+  slideImage.removeAttribute("src");
+  slideQrPanel.hidden = true;
+  slideAvailability.hidden = true;
+  slideDetails.innerHTML = "";
+  slideCategory.textContent = "Promo video";
+  slideTitle.textContent = slide.title || "Promotional video";
+  slideDate.textContent = "Playing now";
+  if (slideDateNote) {
+    slideDateNote.hidden = true;
+    slideDateNote.textContent = "";
+  }
+
+  const detail = document.createElement("span");
+  detail.className = "fullscreen-detail-pill";
+  detail.textContent = "Video";
+  slideDetails.appendChild(detail);
+
+  slideCounter.textContent = `${index + 1} / ${state.slides.length}`;
+  requestAnimationFrame(() => fitTitleToFiveLines());
+
+  const videoUrl = normalizeAssetUrl(slide.src);
+  if (!videoUrl) {
+    state.failedVideoIds.add(slide.id);
+    advanceToNextSlide();
     return;
   }
 
-  state.rotateTimer = setInterval(() => {
-    const nextIndex = (state.currentIndex + 1) % state.items.length;
-    renderSlide(nextIndex);
-  }, slideDelayMs);
+  slideVideo.src = videoUrl;
+  slideVideo.onended = () => advanceToNextSlide();
+  slideVideo.onerror = () => {
+    state.failedVideoIds.add(slide.id);
+    advanceToNextSlide();
+  };
+
+  scheduleAdvance(durationMs);
+  slideVideo.play().catch(() => {
+    state.failedVideoIds.add(slide.id);
+    advanceToNextSlide();
+  });
+}
+
+function findNextRenderableIndex(startIndex) {
+  const slide = getNextRenderableSlide(state.slides, startIndex, state.failedVideoIds);
+  if (!slide) {
+    return -1;
+  }
+  return state.slides.findIndex((candidate, index) => {
+    if (index < startIndex) {
+      return false;
+    }
+    return candidate.id === slide.id && candidate.type === slide.type;
+  }) !== -1
+    ? state.slides.findIndex((candidate, index) => index >= startIndex && candidate.id === slide.id && candidate.type === slide.type)
+    : state.slides.findIndex((candidate) => candidate.id === slide.id && candidate.type === slide.type);
+}
+
+function renderSlide(index) {
+  if (!state.slides.length) {
+    return;
+  }
+
+  stopCurrentPlayback();
+  const resolvedIndex = findNextRenderableIndex(index);
+  if (resolvedIndex === -1) {
+    return;
+  }
+
+  state.currentIndex = resolvedIndex;
+  const slide = state.slides[resolvedIndex];
+  if (slide.type === "video") {
+    renderVideoSlide(resolvedIndex, slide);
+    return;
+  }
+
+  renderEventSlide(resolvedIndex, slide);
+}
+
+function advanceToNextSlide() {
+  if (!state.slides.length) {
+    return;
+  }
+  const nextIndex = (state.currentIndex + 1) % state.slides.length;
+  renderSlide(nextIndex);
+}
+
+function filterSlidesForDisplay(slides) {
+  const eventVisibility = new Map();
+  slides.forEach((slide) => {
+    if (slide.type === "event") {
+      eventVisibility.set(slide.eventId || slide.id, includeClasses || !slide.isClass);
+    }
+  });
+
+  return slides.filter((slide) => {
+    if (slide.type === "event") {
+      return includeClasses || !slide.isClass;
+    }
+    return eventVisibility.get(slide.eventId) !== false;
+  });
 }
 
 function renderPayload(payload) {
-  const payloadItems = Array.isArray(payload.items) ? payload.items : [];
-  state.items = payloadItems.filter((item) => includeClasses || !item.isClass);
+  const payloadSlides = Array.isArray(payload.slides)
+    ? payload.slides
+    : (Array.isArray(payload.items) ? payload.items.map(toEventSlide) : []);
+  state.slides = filterSlidesForDisplay(payloadSlides);
+  if (!state.slides.length) {
+    state.slides = getFallbackItems().map(toEventSlide);
+  }
   renderSlide(0);
-  startRotation();
 }
 
-async function loadEvents(force = false) {
+async function loadSlides(force = false) {
   try {
     if (dataMode === "preview") {
       throw new Error("Direct file mode");
@@ -437,19 +580,15 @@ async function loadEvents(force = false) {
       throw new Error(`Request failed with ${response.status}`);
     }
 
-    const payload = await response.json();
-    renderPayload(payload);
-  } catch (error) {
-    renderPayload({
-      fetchedAt: null,
-      items: getFallbackItems()
-    });
+    renderPayload(await response.json());
+  } catch {
+    renderPayload({ items: getFallbackItems() });
   }
 }
 
 function startRefreshLoop() {
   clearInterval(state.refreshTimer);
-  state.refreshTimer = setInterval(() => loadEvents(true), refreshMs);
+  state.refreshTimer = setInterval(() => loadSlides(true), refreshMs);
 }
 
 function emitKeepAlive() {
@@ -503,7 +642,7 @@ async function startKeepAliveVideo() {
   }
 }
 
-loadEvents();
+loadSlides();
 startRefreshLoop();
 startKeepAliveLoop();
 startKeepAliveVideo();

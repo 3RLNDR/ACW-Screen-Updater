@@ -60,6 +60,22 @@
       </div>
       <div id="eventsGrid" class="events-grid" aria-live="polite"></div>
     </section>
+
+    <section class="video-admin" aria-label="Promo video management">
+      <div class="video-admin-header">
+        <div>
+          <p class="eyebrow">Promo videos</p>
+          <h2>Associate videos with events</h2>
+          <p class="subcopy">Upload a hosted video and link it to an event so the fullscreen screen plays the video first, then the booking slide.</p>
+        </div>
+        <form id="videoUploadForm" class="video-upload-form">
+          <input id="videoUploadInput" name="file" type="file" accept="video/mp4,video/webm,video/ogg">
+          <button type="submit">Upload video</button>
+        </form>
+      </div>
+      <div id="videoUploadStatus" class="video-upload-status" aria-live="polite"></div>
+      <div id="videoAssociationList" class="video-association-list"></div>
+    </section>
   </main>
 
   <template id="eventCardTemplate">
@@ -85,6 +101,6 @@
     </article>
   </template>
 
-  <script src="./app.js"></script>
+  <script type="module" src="./app.js"></script>
 </body>
 </html>

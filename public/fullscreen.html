@@ -21,6 +21,14 @@
   <main class="fullscreen-screen">
     <section class="fullscreen-stage">
       <div class="fullscreen-media">
+        <video
+          id="slideVideo"
+          class="fullscreen-video"
+          hidden
+          muted
+          playsinline
+          preload="auto"
+        ></video>
         <img id="slideImage" class="fullscreen-image" alt="" hidden>
         <div id="slidePoster" class="fullscreen-poster"></div>
         <div id="slideCategory" class="fullscreen-category"></div>
@@ -60,6 +68,6 @@
     </section>
   </main>
 
-  <script src="./fullscreen.js"></script>
+  <script type="module" src="./fullscreen.js"></script>
 </body>
 </html>

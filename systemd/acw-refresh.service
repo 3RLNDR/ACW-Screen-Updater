@@ -1,0 +1,8 @@
+[Unit]
+Description=Refresh ACW display data
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/acw-screen-updater
+ExecStart=/usr/bin/python3 -m pi_display.refresh

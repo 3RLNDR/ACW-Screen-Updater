@@ -1,0 +1,325 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+4 0 obj
+<< /Length 3242 >>
+stream
+BT
+/F2 22.00 Tf
+1 0 0 1 54.00 788.00 Tm
+(ACW Raspberry Pi Kiosk Setup Guide) Tj
+/F1 11.00 Tf
+1 0 0 1 54.00 760.00 Tm
+(Follow this guide to make the Pi boot straight into the fullscreen slideshow.) Tj
+/F1 8.00 Tf
+1 0 0 1 54.00 744.00 Tm
+() Tj
+/F2 15.00 Tf
+1 0 0 1 54.00 734.00 Tm
+(1. Put the project on the Pi) Tj
+/F1 11.00 Tf
+1 0 0 1 54.00 713.00 Tm
+(Clone or copy the repository to a stable location. The examples below assume:) Tj
+/F3 10.00 Tf
+1 0 0 1 72.00 697.00 Tm
+(/opt/acw-screen-updater) Tj
+/F1 11.00 Tf
+1 0 0 1 54.00 683.00 Tm
+(Then install the Python dependencies:) Tj
+/F3 10.00 Tf
+1 0 0 1 72.00 667.00 Tm
+(cd /opt/acw-screen-updater) Tj
+1 0 0 1 72.00 653.00 Tm
+(python3 -m pip install -r requirements.txt) Tj
+/F1 8.00 Tf
+1 0 0 1 54.00 639.00 Tm
+() Tj
+/F2 15.00 Tf
+1 0 0 1 54.00 629.00 Tm
+(2. Test the app manually) Tj
+/F1 11.00 Tf
+1 0 0 1 54.00 608.00 Tm
+(Run a refresh once, then start the local web app:) Tj
+/F3 10.00 Tf
+1 0 0 1 72.00 592.00 Tm
+(python3 -m pi_display.refresh) Tj
+1 0 0 1 72.00 578.00 Tm
+(python3 -m pi_display.web) Tj
+/F1 11.00 Tf
+1 0 0 1 54.00 564.00 Tm
+(Open these URLs on the Pi to confirm the dashboard and display are working:) Tj
+1 0 0 1 70.00 548.00 Tm
+(- http://localhost:8080/) Tj
+1 0 0 1 70.00 532.00 Tm
+(- http://localhost:8080/fullscreen.html?includeClasses=false) Tj
+1 0 0 1 54.00 516.00 Tm
+(Use the dashboard to upload a promo video and link it to an event. The fullscreen) Tj
+1 0 0 1 54.00 500.00 Tm
+(screen should then show the video first and the booking slide second.) Tj
+/F1 8.00 Tf
+1 0 0 1 54.00 484.00 Tm
+() Tj
+/F2 15.00 Tf
+1 0 0 1 54.00 474.00 Tm
+(3. Install the systemd services) Tj
+/F1 11.00 Tf
+1 0 0 1 54.00 453.00 Tm
+(Copy these files from the repository into /etc/systemd/system/:) Tj
+1 0 0 1 70.00 437.00 Tm
+(- systemd/acw-display.service) Tj
+1 0 0 1 70.00 421.00 Tm
+(- systemd/acw-refresh.service) Tj
+1 0 0 1 70.00 405.00 Tm
+(- systemd/acw-refresh.timer) Tj
+1 0 0 1 54.00 389.00 Tm
+(Then enable them:) Tj
+/F3 10.00 Tf
+1 0 0 1 72.00 373.00 Tm
+(sudo systemctl daemon-reload) Tj
+1 0 0 1 72.00 359.00 Tm
+(sudo systemctl enable --now acw-display.service) Tj
+1 0 0 1 72.00 345.00 Tm
+(sudo systemctl enable --now acw-refresh.timer) Tj
+/F1 11.00 Tf
+1 0 0 1 54.00 331.00 Tm
+(Check service status:) Tj
+/F3 10.00 Tf
+1 0 0 1 72.00 315.00 Tm
+(sudo systemctl status acw-display.service) Tj
+1 0 0 1 72.00 301.00 Tm
+(sudo systemctl status acw-refresh.timer) Tj
+/F1 8.00 Tf
+1 0 0 1 54.00 287.00 Tm
+() Tj
+/F2 15.00 Tf
+1 0 0 1 54.00 277.00 Tm
+(4. Create the kiosk launcher script) Tj
+/F1 11.00 Tf
+1 0 0 1 54.00 256.00 Tm
+(Create this file on the Pi:) Tj
+/F3 10.00 Tf
+1 0 0 1 72.00 240.00 Tm
+(/opt/acw-screen-updater/scripts/start-kiosk.sh) Tj
+/F3 9.50 Tf
+1 0 0 1 76.00 226.00 Tm
+(#!/bin/bash) Tj
+1 0 0 1 76.00 213.00 Tm
+(set -e) Tj
+1 0 0 1 76.00 200.00 Tm
+() Tj
+1 0 0 1 76.00 187.00 Tm
+(export DISPLAY=:0) Tj
+1 0 0 1 76.00 174.00 Tm
+(export XAUTHORITY=/home/pi/.Xauthority) Tj
+1 0 0 1 76.00 161.00 Tm
+() Tj
+1 0 0 1 76.00 148.00 Tm
+(xset s off) Tj
+1 0 0 1 76.00 135.00 Tm
+(xset -dpms) Tj
+1 0 0 1 76.00 122.00 Tm
+(xset s noblank) Tj
+1 0 0 1 76.00 109.00 Tm
+() Tj
+1 0 0 1 76.00 96.00 Tm
+(chromium-browser \\) Tj
+1 0 0 1 76.00 83.00 Tm
+(  --kiosk \\) Tj
+/F1 9 Tf
+1 0 0 1 471.00 28.00 Tm
+(Page 1 of 3) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 10 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 3437 >>
+stream
+BT
+/F3 9.50 Tf
+1 0 0 1 76.00 788.00 Tm
+(  --incognito \\) Tj
+1 0 0 1 76.00 775.00 Tm
+(  --disable-infobars \\) Tj
+1 0 0 1 76.00 762.00 Tm
+(  --noerrdialogs \\) Tj
+1 0 0 1 76.00 749.00 Tm
+(  --check-for-update-interval=31536000 \\) Tj
+1 0 0 1 76.00 736.00 Tm
+(  --overscroll-history-navigation=0 \\) Tj
+1 0 0 1 76.00 723.00 Tm
+(  http://localhost:8080/fullscreen.html?includeClasses=false) Tj
+/F1 8.00 Tf
+1 0 0 1 54.00 710.00 Tm
+() Tj
+/F1 11.00 Tf
+1 0 0 1 54.00 701.00 Tm
+(Make it executable:) Tj
+/F3 10.00 Tf
+1 0 0 1 72.00 685.00 Tm
+(chmod +x /opt/acw-screen-updater/scripts/start-kiosk.sh) Tj
+/F1 8.00 Tf
+1 0 0 1 54.00 671.00 Tm
+() Tj
+/F2 15.00 Tf
+1 0 0 1 54.00 661.00 Tm
+(5. Create the autostart desktop entry) Tj
+/F1 11.00 Tf
+1 0 0 1 54.00 640.00 Tm
+(If needed, create the autostart folder first:) Tj
+/F3 10.00 Tf
+1 0 0 1 72.00 624.00 Tm
+(mkdir -p /home/pi/.config/autostart) Tj
+/F1 11.00 Tf
+1 0 0 1 54.00 610.00 Tm
+(Then create this file:) Tj
+/F3 10.00 Tf
+1 0 0 1 72.00 594.00 Tm
+(/home/pi/.config/autostart/acw-display.desktop) Tj
+/F3 9.50 Tf
+1 0 0 1 76.00 580.00 Tm
+([Desktop Entry]) Tj
+1 0 0 1 76.00 567.00 Tm
+(Type=Application) Tj
+1 0 0 1 76.00 554.00 Tm
+(Name=ACW Display) Tj
+1 0 0 1 76.00 541.00 Tm
+(Exec=/opt/acw-screen-updater/scripts/start-kiosk.sh) Tj
+1 0 0 1 76.00 528.00 Tm
+(X-GNOME-Autostart-enabled=true) Tj
+/F1 8.00 Tf
+1 0 0 1 54.00 515.00 Tm
+() Tj
+1 0 0 1 54.00 506.00 Tm
+() Tj
+/F2 15.00 Tf
+1 0 0 1 54.00 496.00 Tm
+(6. Adjust values if needed) Tj
+/F1 11.00 Tf
+1 0 0 1 70.00 475.00 Tm
+(- If your Pi username is not pi, change /home/pi/.Xauthority and the autostart) Tj
+1 0 0 1 70.00 459.00 Tm
+(  path to match your real home folder.) Tj
+1 0 0 1 70.00 443.00 Tm
+(- If Chromium is installed as chromium instead of chromium-browser, swap that) Tj
+1 0 0 1 70.00 427.00 Tm
+(  command in the launcher script.) Tj
+1 0 0 1 70.00 411.00 Tm
+(- If you want classes included in the display, change the URL to) Tj
+1 0 0 1 70.00 395.00 Tm
+(  http://localhost:8080/fullscreen.html?includeClasses=true.) Tj
+/F1 8.00 Tf
+1 0 0 1 54.00 379.00 Tm
+() Tj
+/F2 15.00 Tf
+1 0 0 1 54.00 369.00 Tm
+(7. Reboot and verify) Tj
+/F1 11.00 Tf
+1 0 0 1 54.00 348.00 Tm
+(After reboot, the Pi should:) Tj
+1 0 0 1 70.00 332.00 Tm
+(- start the ACW web app) Tj
+1 0 0 1 70.00 316.00 Tm
+(- run scheduled refreshes in the background) Tj
+1 0 0 1 70.00 300.00 Tm
+(- open Chromium in kiosk mode) Tj
+1 0 0 1 70.00 284.00 Tm
+(- display the fullscreen slideshow automatically) Tj
+1 0 0 1 54.00 268.00 Tm
+(From another device on the same network, you can open the dashboard at) Tj
+1 0 0 1 54.00 252.00 Tm
+(http://<pi-ip>:8080/ to upload videos and change event associations.) Tj
+/F1 8.00 Tf
+1 0 0 1 54.00 236.00 Tm
+() Tj
+/F2 15.00 Tf
+1 0 0 1 54.00 226.00 Tm
+(8. Useful maintenance commands) Tj
+/F3 10.00 Tf
+1 0 0 1 72.00 205.00 Tm
+(sudo systemctl restart acw-display.service) Tj
+1 0 0 1 72.00 191.00 Tm
+(sudo systemctl start acw-refresh.service) Tj
+1 0 0 1 72.00 177.00 Tm
+(journalctl -u acw-display.service -n 100 --no-pager) Tj
+1 0 0 1 72.00 163.00 Tm
+(journalctl -u acw-refresh.service -n 100 --no-pager) Tj
+/F1 8.00 Tf
+1 0 0 1 54.00 149.00 Tm
+() Tj
+/F2 15.00 Tf
+1 0 0 1 54.00 139.00 Tm
+(Quick checklist) Tj
+/F1 11.00 Tf
+1 0 0 1 70.00 118.00 Tm
+(- Project copied to /opt/acw-screen-updater) Tj
+1 0 0 1 70.00 102.00 Tm
+(- Dependencies installed) Tj
+1 0 0 1 70.00 86.00 Tm
+(- Refresh and web app tested manually) Tj
+/F1 9 Tf
+1 0 0 1 471.00 28.00 Tm
+(Page 2 of 3) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 10 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 324 >>
+stream
+BT
+/F1 11.00 Tf
+1 0 0 1 70.00 788.00 Tm
+(- systemd units enabled) Tj
+1 0 0 1 70.00 772.00 Tm
+(- start-kiosk.sh created and made executable) Tj
+1 0 0 1 70.00 756.00 Tm
+(- acw-display.desktop created) Tj
+1 0 0 1 70.00 740.00 Tm
+(- Pi reboots into the fullscreen display) Tj
+/F1 9 Tf
+1 0 0 1 471.00 28.00 Tm
+(Page 3 of 3) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 10 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R 9 0 R] /Count 3 >>
+endobj
+11 0 obj
+<< /Type /Catalog /Pages 10 0 R >>
+endobj
+xref
+0 12
+0000000000 65535 f 
+0000000015 00000 n 
+0000000085 00000 n 
+0000000160 00000 n 
+0000000228 00000 n 
+0000003522 00000 n 
+0000003669 00000 n 
+0000007158 00000 n 
+0000007305 00000 n 
+0000007680 00000 n 
+0000007827 00000 n 
+0000007897 00000 n 
+trailer
+<< /Size 12 /Root 11 0 R >>
+startxref
+7948
+%%EOF
