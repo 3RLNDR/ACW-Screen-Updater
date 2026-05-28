@@ -1,0 +1,62 @@
+name: Monthly Slide Export Email
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        shell: pwsh
+        run: python -m pip install -r requirements.txt
+
+      - name: Evaluate month-end gate
+        id: gate
+        shell: pwsh
+        run: |
+          $value = python -c "from datetime import date; from pi_display.monthly_export import is_three_days_before_month_end; print('true' if is_three_days_before_month_end(date.today()) else 'false')"
+          "run_export=$value" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Stop when outside export window
+        if: github.event_name != 'workflow_dispatch' && steps.gate.outputs.run_export != 'true'
+        shell: pwsh
+        run: Write-Host "Not three days before month-end. Exiting."
+
+      - name: Generate monthly export pack
+        if: github.event_name == 'workflow_dispatch' || steps.gate.outputs.run_export == 'true'
+        shell: pwsh
+        run: python -m pi_display.monthly_export
+
+      - name: Upload export artifact
+        if: github.event_name == 'workflow_dispatch' || steps.gate.outputs.run_export == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: monthly-slide-export
+          path: output/monthly-export/
+
+      - name: Send email with download link
+        if: github.event_name == 'workflow_dispatch' || steps.gate.outputs.run_export == 'true'
+        shell: pwsh
+        env:
+          EXPORT_DOWNLOAD_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EXPORT_EMAIL_TO: ${{ secrets.EXPORT_EMAIL_TO }}
+          EXPORT_EMAIL_FROM: ${{ secrets.EXPORT_EMAIL_FROM }}
+          EXPORT_SMTP_HOST: ${{ secrets.EXPORT_SMTP_HOST }}
+          EXPORT_SMTP_PORT: ${{ secrets.EXPORT_SMTP_PORT }}
+          EXPORT_SMTP_USERNAME: ${{ secrets.EXPORT_SMTP_USERNAME }}
+          EXPORT_SMTP_PASSWORD: ${{ secrets.EXPORT_SMTP_PASSWORD }}
+        run: python scripts/send_monthly_export_email.py

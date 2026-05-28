@@ -266,6 +266,34 @@ To use Pages:
 2. In the repository settings, set Pages to use `GitHub Actions`.
 3. Let the workflow publish the `public/` folder.
 
+### Monthly slide export email
+
+The repository also includes a scheduled GitHub Actions workflow that prepares a monthly ZIP of upcoming event slides in:
+
+- `16:9`
+- `4:3`
+
+The workflow:
+
+- runs daily
+- exits unless it is three days before month-end
+- supports manual runs through `workflow_dispatch`
+- uploads an export artifact
+- emails a download link to the configured recipient
+
+It runs on `windows-latest` because the current JPG renderer uses a Windows-native PowerShell image composition path.
+
+Required secrets:
+
+- `EXPORT_EMAIL_TO`
+- `EXPORT_EMAIL_FROM`
+- `EXPORT_SMTP_HOST`
+- `EXPORT_SMTP_PORT`
+- `EXPORT_SMTP_USERNAME`
+- `EXPORT_SMTP_PASSWORD`
+
+The email download link currently points to the GitHub Actions run page for the export run, where the uploaded artifact can be downloaded.
+
 ## Key files
 
 - [README.md](/C:/Users/chris/Documents/ACW%20Screen%20Updater/README.md)
