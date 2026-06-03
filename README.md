@@ -37,7 +37,8 @@ This is now the preferred production path.
 2. The Pi-hosted service serves the dashboard, fullscreen view, cached images, QR codes, and uploaded promo videos
 3. Uploaded video metadata and event-to-video associations are stored in `data/acw-display.sqlite3`
 4. The dashboard can upload local promo videos and link them to events
-5. The fullscreen screen plays `video -> event` whenever an association exists
+5. Video uploads and association changes immediately regenerate `public/slides.json` from the current event payload, without re-scraping the source site
+6. The fullscreen screen plays `video -> event` whenever an association exists
 
 ### Static mode
 
@@ -140,7 +141,9 @@ Each event item includes fields such as:
 - `imageLocal`
 - `qrLocal`
 
-The Pi flow also generates `public/slides.json`, where each entry has a `type` of either `event` or `video`.
+The Pi flow also generates `public/slides.json`, where each entry has a `type` of either `event` or `video`. The Pi web service rewrites this file after a video upload, event-video association update, or association clear so `/api/slides` reflects operator changes straight away.
+
+Video-management API responses include `slidesUpdated: true` and `slideTotal` when an upload or association change successfully republishes the slideshow.
 
 ## Running locally
 
@@ -166,6 +169,7 @@ This path enables:
 - local video uploads under `public/cache/videos/`
 - SQLite-backed event-to-video associations in `data/acw-display.sqlite3`
 - the dashboard video-management UI
+- immediate `slides.json` republishing after video upload, association, or clearing an association
 
 ### Option 2: run the live local PowerShell server
 
@@ -248,7 +252,10 @@ Operator workflow:
 1. Open the dashboard on the Pi-hosted service.
 2. Upload a promo video file.
 3. Choose the matching event from the association list.
-4. Open the fullscreen URL and confirm the video plays before the event slide.
+4. The service rewrites `public/slides.json` immediately from the existing event payload plus the latest video associations.
+5. Open or refresh the fullscreen URL and confirm the video plays before the event slide.
+
+Association changes do not trigger a fresh website scrape. Run `python -m pi_display.refresh` or wait for `acw-refresh.timer` when the event list itself needs to be updated.
 
 GitHub Pages deployment is defined in [deploy-pages.yml](/C:/Users/chris/Documents/ACW%20Screen%20Updater/.github/workflows/deploy-pages.yml).
 
@@ -314,7 +321,7 @@ The email download link currently points to the GitHub Actions run page for the 
 ## Notes and limitations
 
 - The scraper depends on the current HTML structure of the Sunderland Culture site. If that markup changes, parsing may need to be updated.
-- The Python web service currently uses the standard-library `cgi` parser for uploads, which is deprecated in Python 3.13 and should be replaced during a future maintenance pass.
+- Video uploads and association changes republish `public/slides.json` from the currently generated `public/events.json`; they do not scrape for new events.
 - The static GitHub Pages version is not live in the server sense. It only updates when the generation workflow runs.
 - The live local server only supports `GET` requests.
 - The live server exposes `GET /api/events` and `GET /health`.
