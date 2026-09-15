@@ -512,29 +512,6 @@ function Get-StartTimeFromLines {
     return $null
 }
 
-function Get-CostFromLines {
-    param(
-        [string[]]$Lines,
-        [string[]]$Badges
-    )
-
-    if ($Badges -contains "Free") {
-        return "Free"
-    }
-
-    foreach ($line in $Lines) {
-        $moneyMatch = [regex]::Match($line, '(Tickets?\s*)?£\s*\d+(?:\.\d{2})?')
-        if ($moneyMatch.Success) {
-            $value = Normalize-Whitespace $moneyMatch.Value
-            $value = $value -replace '^(Tickets?\s*)', ''
-            return $value.Trim()
-        }
-    }
-
-    return $null
-}
-
-
 function Normalize-CompareText {
     param([string]$Value)
 

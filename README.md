@@ -149,7 +149,7 @@ There is also a helper launcher:
 
 - `Run-Live-Display.bat`
 
-Important: that batch file currently hardcodes `C:\Users\chris\Documents\ACW Screen Updater`. If the repo lives somewhere else, update the path before using it.
+The helper launcher resolves the project folder from its own location, so it can run from any checkout path.
 
 ### Option 2: generate static data locally
 
@@ -180,7 +180,7 @@ Important: opening the HTML files directly with `file://` does not load real eve
 
 ## Deployment
 
-GitHub Pages deployment is defined in [deploy-pages.yml](/C:/Users/chris/Documents/ACW%20Screen%20Updater/.github/workflows/deploy-pages.yml).
+GitHub Pages deployment is defined in [.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml).
 
 The workflow:
 
@@ -198,17 +198,17 @@ To use Pages:
 
 ## Key files
 
-- [README.md](/C:/Users/chris/Documents/ACW%20Screen%20Updater/README.md)
-- [Start-AcwDisplay.ps1](/C:/Users/chris/Documents/ACW%20Screen%20Updater/Start-AcwDisplay.ps1)
-- [Run-Live-Display.bat](/C:/Users/chris/Documents/ACW%20Screen%20Updater/Run-Live-Display.bat)
-- [scripts/Generate-StaticEvents.ps1](/C:/Users/chris/Documents/ACW%20Screen%20Updater/scripts/Generate-StaticEvents.ps1)
-- [public/index.html](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/index.html)
-- [public/app.js](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/app.js)
-- [public/fullscreen.html](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/fullscreen.html)
-- [public/fullscreen.js](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/fullscreen.js)
-- [public/styles.css](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/styles.css)
-- [public/events.json](/C:/Users/chris/Documents/ACW%20Screen%20Updater/public/events.json)
-- [backup-local-server/](/C:/Users/chris/Documents/ACW%20Screen%20Updater/backup-local-server)
+- [README.md](README.md)
+- [Start-AcwDisplay.ps1](Start-AcwDisplay.ps1)
+- [Run-Live-Display.bat](Run-Live-Display.bat)
+- [scripts/Generate-StaticEvents.ps1](scripts/Generate-StaticEvents.ps1)
+- [public/index.html](public/index.html)
+- [public/app.js](public/app.js)
+- [public/fullscreen.html](public/fullscreen.html)
+- [public/fullscreen.js](public/fullscreen.js)
+- [public/styles.css](public/styles.css)
+- [public/events.json](public/events.json)
+- [backup-local-server/](backup-local-server/)
 
 ## Notes and limitations
 
