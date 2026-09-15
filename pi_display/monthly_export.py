@@ -3,6 +3,7 @@ from __future__ import annotations
 from calendar import monthrange
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
+import math
 import json
 from pathlib import Path
 import re
@@ -12,6 +13,12 @@ import zipfile
 
 from pi_display.config import AppConfig
 from pi_display.monthly_template import get_ratio_spec
+
+FONT_ASSETS = {
+    "category": "assets/fonts/Montserrat-SemiBold.ttf",
+    "title": "assets/fonts/Montserrat-Bold.ttf",
+}
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 @dataclass(frozen=True)
@@ -92,12 +99,32 @@ def build_export_filename(item: dict) -> str:
     return f"{sort_date}-{slugify_filename(item['title'])}.jpg"
 
 
-def build_manifest(window_label: str, selected_count: int, generated_count: int, warnings: list[dict]) -> dict:
+def build_manifest_event(item: dict) -> dict:
+    category = normalize_export_text(item.get("category")).lower()
+    if category == "exhibitions":
+        meta = item.get("meta") or []
+        date_label = normalize_export_text(meta[0]) if meta else normalize_export_text(item.get("dateText"))
+    else:
+        date_label = normalize_export_text(item.get("dateText"))
+    return {
+        "title": normalize_export_text(item.get("title")),
+        "date": date_label,
+    }
+
+
+def build_manifest(
+    window_label: str,
+    selected_count: int,
+    generated_count: int,
+    warnings: list[dict],
+    events: list[dict],
+) -> dict:
     return {
         "windowLabel": window_label,
         "selectedCount": selected_count,
         "generatedCount": generated_count,
         "warnings": warnings,
+        "events": events,
     }
 
 
@@ -109,17 +136,141 @@ def ensure_ratio_dirs(output_dir: Path) -> tuple[Path, Path]:
     return wide, standard
 
 
-def get_palette(category: str | None) -> tuple[str, str, str]:
-    palette = {
-        "theatre and performance": ("#7a2e23", "#f4e6d7", "#1f1714"),
-        "special events": ("#8c5a18", "#f7ead0", "#1f180f"),
-        "music": ("#15505d", "#dff4f2", "#102326"),
-        "films": ("#243c6b", "#e4ecff", "#10172a"),
-        "exhibitions": ("#2b5b41", "#e0f2e8", "#132119"),
-        "comedy": ("#8f3b52", "#f7dfe6", "#25151a"),
-        "talks": ("#6f4a37", "#f1e1d3", "#241915"),
+HOUSE_PALETTE = {
+    "brandColor": "#5f3a2d",
+    "panelColor": "#fcf5ea",
+    "inkColor": "#1f1714",
+    "noteColor": "#4d544c",
+}
+
+
+def clamp(value: int, minimum: int, maximum: int) -> int:
+    return max(minimum, min(maximum, value))
+
+
+def estimate_visual_title_units(title: str) -> float:
+    units = 0.0
+    for char in title:
+        if char in "MW&":
+            units += 1.55
+        elif char.isupper():
+            units += 1.28
+        elif char in "mqw":
+            units += 1.18
+        elif char in "il.,:' ":
+            units += 0.42
+        else:
+            units += 0.92
+    return units
+
+
+def estimate_title_lines(title: str, title_width: int, font_size: int) -> int:
+    if not title:
+        return 1
+    average_unit_width = max(font_size * 0.66, 1)
+    units_per_line = max(title_width / average_unit_width, 6)
+    visual_units = estimate_visual_title_units(title)
+    occupancy = visual_units / units_per_line
+    if occupancy > 0.88 and len(title.split()) >= 4:
+        return 2
+    return max(1, math.ceil(occupancy))
+
+
+def wrap_title_text(title: str, title_width: int, font_size: int, max_lines: int) -> list[str]:
+    words = title.split()
+    if not words:
+        return [title]
+
+    average_unit_width = max(font_size * 0.72, 1)
+    units_per_line = max(title_width / average_unit_width, 5)
+    lines: list[str] = []
+    current_words: list[str] = []
+    current_units = 0.0
+
+    for word in words:
+        word_units = estimate_visual_title_units(word)
+        spacer_units = 0.45 if current_words else 0.0
+        if current_words and current_units + spacer_units + word_units > units_per_line and len(lines) < max_lines - 1:
+            lines.append(" ".join(current_words))
+            current_words = [word]
+            current_units = word_units
+            continue
+        current_words.append(word)
+        current_units += spacer_units + word_units
+
+    if current_words:
+        lines.append(" ".join(current_words))
+
+    if len(lines) > max_lines:
+        kept = lines[: max_lines - 1]
+        kept.append(" ".join(lines[max_lines - 1 :]))
+        lines = kept
+
+    return lines
+
+
+def force_balanced_title_break(title: str) -> list[str]:
+    words = title.split()
+    if len(words) < 4:
+        return [title]
+    midpoint = max(2, len(words) // 2)
+    return [" ".join(words[:midpoint]), " ".join(words[midpoint:])]
+
+
+def build_title_layout(title: str, title_width: int, ratio: str) -> dict[str, int]:
+    word_count = len(title.split())
+    if ratio == "16x9":
+        max_size = 32
+        min_size = 22
+        max_lines = 4
+    else:
+        max_size = 26
+        min_size = 20
+        max_lines = 4
+
+    font_size = max_size
+    while font_size > min_size:
+        line_count = estimate_title_lines(title, title_width=title_width, font_size=font_size)
+        if line_count <= max_lines:
+            break
+        font_size -= 1
+
+    title_length = len(title)
+    if title_length > 56:
+        font_size -= 10
+    elif title_length > 44:
+        font_size -= 5
+    elif title_length > 32:
+        font_size -= 3
+    font_size = clamp(font_size, min_size, max_size)
+    wrapped_lines = wrap_title_text(title, title_width=title_width, font_size=font_size, max_lines=max_lines)
+    line_count = len(wrapped_lines)
+    if word_count >= 4 and line_count < 2:
+        wrapped_lines = force_balanced_title_break(title)
+        line_count = len(wrapped_lines)
+    line_height = int(font_size * 1.22)
+    return {
+        "titleFontSize": font_size,
+        "titleMinFontSize": min_size,
+        "titleMaxLines": max_lines,
+        "titleLineCount": line_count,
+        "titleLineHeight": line_height,
+        "titleLineHeightFactor": 1.22,
+        "titleBoxHeight": (line_count * line_height) + 12,
+        "titleText": "\n".join(wrapped_lines),
     }
-    return palette.get(normalize_export_text(category).lower(), ("#31463f", "#e9efe9", "#17211e"))
+
+
+def is_free_event(item: dict) -> bool:
+    values = [
+        normalize_export_text(item.get("cost")).lower(),
+        normalize_export_text(item.get("status")).lower(),
+    ]
+    return any(value == "free" for value in values)
+
+
+def get_qr_prompt(item: dict) -> str:
+    return "Find out more" if is_free_event(item) else "Scan to book"
 
 
 def resolve_public_asset_path(project_root: Path, asset_path: str | None) -> Path | None:
@@ -131,12 +282,34 @@ def resolve_public_asset_path(project_root: Path, asset_path: str | None) -> Pat
     return None
 
 
+def resolve_font_asset_path(project_root: Path, asset_key: str) -> Path:
+    relative_path = Path(FONT_ASSETS[asset_key])
+    for root in (project_root, REPO_ROOT):
+        candidate = root / relative_path
+        if candidate.exists():
+            return candidate.resolve()
+    return (REPO_ROOT / relative_path).resolve()
+
+
 def build_render_spec(project_root: Path, item: dict, ratio: str, output_file: Path) -> dict:
     spec = get_ratio_spec(ratio)
-    brand_color, panel_color, ink_color = get_palette(item.get("category"))
+    title = normalize_export_text(item.get("title"))
+    title_layout = build_title_layout(title=title, title_width=spec.title_width, ratio=ratio)
     meta_line, note_line = format_export_date_lines(item)
     image_path = resolve_public_asset_path(project_root, item.get("imageLocal"))
     qr_path = resolve_public_asset_path(project_root, item.get("qrLocal"))
+    category_font_size = 20 if ratio == "16x9" else 18
+    meta_font_size = 24 if ratio == "16x9" else 22
+    note_font_size = 18 if ratio == "16x9" else 17
+    qr_prompt_font_size = 15 if ratio == "16x9" else 14
+    qr_container_padding = 16
+    qr_prompt_gap = 12 if ratio == "16x9" else 14
+    qr_prompt_y = spec.qr_y - qr_container_padding - qr_prompt_font_size - qr_prompt_gap
+    meta_line_height = meta_font_size + 10
+    note_line_height = note_font_size + 8
+    meta_y = max(spec.meta_y, spec.title_y + title_layout["titleBoxHeight"] + 54)
+    note_y = meta_y + meta_line_height + 16 if note_line else spec.note_y
+
     return {
         "width": spec.width,
         "height": spec.height,
@@ -149,20 +322,44 @@ def build_render_spec(project_root: Path, item: dict, ratio: str, output_file: P
         "titleX": spec.title_x,
         "titleY": spec.title_y,
         "titleWidth": spec.title_width,
+        "titleBoxHeight": title_layout["titleBoxHeight"],
+        "titleFontSize": title_layout["titleFontSize"],
+        "titleMinFontSize": title_layout["titleMinFontSize"],
+        "titleMaxLines": title_layout["titleMaxLines"],
+        "titleLineHeight": title_layout["titleLineHeight"],
+        "titleLineHeightFactor": title_layout["titleLineHeightFactor"],
         "metaX": spec.meta_x,
-        "metaY": spec.meta_y,
+        "metaY": meta_y,
+        "metaFontSize": meta_font_size,
+        "metaLineHeight": meta_line_height,
         "noteX": spec.note_x,
-        "noteY": spec.note_y,
+        "noteY": note_y,
+        "noteFontSize": note_font_size,
+        "noteLineHeight": note_line_height,
         "qrX": spec.qr_x,
         "qrY": spec.qr_y,
         "qrSize": spec.qr_size,
-        "panelColor": panel_color,
-        "brandColor": brand_color,
-        "inkColor": ink_color,
+        "qrContainerPadding": qr_container_padding,
+        "panelColor": HOUSE_PALETTE["panelColor"],
+        "brandColor": HOUSE_PALETTE["brandColor"],
+        "inkColor": HOUSE_PALETTE["inkColor"],
+        "noteColor": HOUSE_PALETTE["noteColor"],
+        "categoryFontFamily": "Montserrat",
+        "titleFontFamily": "Montserrat",
+        "metaFontFamily": "Arial",
+        "noteFontFamily": "Arial",
+        "categoryFontFile": str(resolve_font_asset_path(project_root, "category")),
+        "titleFontFile": str(resolve_font_asset_path(project_root, "title")),
+        "categoryFontSize": category_font_size,
         "category": normalize_export_text(item.get("category")).upper(),
-        "title": normalize_export_text(item.get("title")),
+        "titleRaw": title,
+        "title": title_layout["titleText"],
         "metaLine": meta_line,
         "noteLine": note_line,
+        "qrPrompt": get_qr_prompt(item),
+        "qrPromptFontSize": qr_prompt_font_size,
+        "qrPromptGap": qr_prompt_gap,
+        "qrPromptY": qr_prompt_y,
         "imagePath": str(image_path) if image_path else "",
         "qrPath": str(qr_path) if qr_path else "",
         "outputPath": str(output_file),
@@ -213,6 +410,7 @@ def render_monthly_export_pack(project_root: Path, output_dir: Path, items: list
         selected_count=len(items),
         generated_count=len(generated_files),
         warnings=warnings,
+        events=[build_manifest_event(item) for item in items],
     )
     (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return manifest

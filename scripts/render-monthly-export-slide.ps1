@@ -7,6 +7,86 @@ $ErrorActionPreference = "Stop"
 
 Add-Type -AssemblyName System.Drawing
 
+function Get-FittedTitleLayout {
+    param(
+        [Parameter(Mandatory = $true)][System.Drawing.Graphics]$Graphics,
+        [Parameter(Mandatory = $true)][System.Drawing.FontFamily]$FontFamily,
+        [Parameter(Mandatory = $true)][string[]]$Words,
+        [Parameter(Mandatory = $true)][float]$StartSize,
+        [Parameter(Mandatory = $true)][float]$MinimumSize,
+        [Parameter(Mandatory = $true)][float]$MaxWidth,
+        [Parameter(Mandatory = $true)][float]$MaxHeight,
+        [Parameter(Mandatory = $true)][int]$MaxLines,
+        [Parameter(Mandatory = $true)][float]$LineHeightFactor
+    )
+
+    function Get-WrappedLines {
+        param(
+            [System.Drawing.Graphics]$Graphics,
+            [System.Drawing.Font]$Font,
+            [string[]]$Words,
+            [float]$MaxWidth
+        )
+
+        $lines = New-Object System.Collections.Generic.List[string]
+        $currentLine = ""
+        foreach ($word in $Words) {
+            if ([string]::IsNullOrWhiteSpace($word)) {
+                continue
+            }
+            $candidate = if ([string]::IsNullOrWhiteSpace($currentLine)) { $word } else { "$currentLine $word" }
+            $candidateWidth = $Graphics.MeasureString($candidate, $Font).Width
+            if ($candidateWidth -le $MaxWidth -or [string]::IsNullOrWhiteSpace($currentLine)) {
+                $currentLine = $candidate
+                continue
+            }
+            $lines.Add($currentLine)
+            $currentLine = $word
+        }
+        if ([string]::IsNullOrWhiteSpace($currentLine) -eq $false) {
+            $lines.Add($currentLine)
+        }
+        return ,$lines.ToArray()
+    }
+
+    $size = [Math]::Max($StartSize, $MinimumSize)
+    while ($size -ge $MinimumSize) {
+        $font = New-Object System.Drawing.Font($FontFamily, $size, [System.Drawing.FontStyle]::Regular)
+        $lines = Get-WrappedLines -Graphics $Graphics -Font $font -Words $Words -MaxWidth $MaxWidth
+        if ($lines.Count -gt $MaxLines) {
+            $font.Dispose()
+            $size -= 1
+            continue
+        }
+        $lineHeight = [Math]::Ceiling($size * $LineHeightFactor)
+        $totalHeight = ($lineHeight * $lines.Count) + 12
+        $widestLine = 0.0
+        foreach ($line in $lines) {
+            $measured = $Graphics.MeasureString([string]$line, $font)
+            if ($measured.Width -gt $widestLine) {
+                $widestLine = $measured.Width
+            }
+        }
+        if ($widestLine -le $MaxWidth -and $totalHeight -le $MaxHeight) {
+            return @{
+                Font = $font
+                LineHeight = $lineHeight
+                Lines = $lines
+            }
+        }
+        $font.Dispose()
+        $size -= 1
+    }
+
+    $fallbackFont = New-Object System.Drawing.Font($FontFamily, $MinimumSize, [System.Drawing.FontStyle]::Regular)
+    $fallbackLines = Get-WrappedLines -Graphics $Graphics -Font $fallbackFont -Words $Words -MaxWidth $MaxWidth
+    return @{
+        Font = $fallbackFont
+        LineHeight = [Math]::Ceiling($MinimumSize * $LineHeightFactor)
+        Lines = $fallbackLines
+    }
+}
+
 $spec = Get-Content -LiteralPath $SpecPath -Raw | ConvertFrom-Json
 
 $bitmap = New-Object System.Drawing.Bitmap([int]$spec.width, [int]$spec.height)
@@ -58,29 +138,60 @@ try {
     $graphics.FillRectangle($panelBrush, [int]$spec.panelX, 56, [int]$spec.panelWidth, ([int]$spec.height - 112))
     $panelBrush.Dispose()
 
-    $categoryFont = New-Object System.Drawing.Font("Arial", 22, [System.Drawing.FontStyle]::Bold)
-    $titleFont = New-Object System.Drawing.Font("Georgia", 32, [System.Drawing.FontStyle]::Bold)
-    $metaFont = New-Object System.Drawing.Font("Arial", 34, [System.Drawing.FontStyle]::Bold)
-    $noteFont = New-Object System.Drawing.Font("Arial", 22, [System.Drawing.FontStyle]::Regular)
+    $categoryFontCollection = New-Object System.Drawing.Text.PrivateFontCollection
+    $categoryFontCollection.AddFontFile([string]$spec.categoryFontFile)
+    $titleFontCollection = New-Object System.Drawing.Text.PrivateFontCollection
+    $titleFontCollection.AddFontFile([string]$spec.titleFontFile)
+
+    $categoryFamily = $categoryFontCollection.Families | Select-Object -First 1
+    $titleFamily = $titleFontCollection.Families | Select-Object -First 1
+
+    $categoryFont = New-Object System.Drawing.Font($categoryFamily, [float]$spec.categoryFontSize, [System.Drawing.FontStyle]::Regular)
+    $titleWords = ([string]$spec.titleRaw) -split "\s+"
+    $titleLayout = Get-FittedTitleLayout `
+        -Graphics $graphics `
+        -FontFamily $titleFamily `
+        -Words $titleWords `
+        -StartSize ([float]$spec.titleFontSize) `
+        -MinimumSize ([float]$spec.titleMinFontSize) `
+        -MaxWidth ([float]$spec.titleWidth) `
+        -MaxHeight ([float]$spec.titleBoxHeight) `
+        -MaxLines ([int]$spec.titleMaxLines) `
+        -LineHeightFactor ([float]$spec.titleLineHeightFactor)
+    $titleFont = $titleLayout.Font
+    $metaFont = New-Object System.Drawing.Font([string]$spec.metaFontFamily, [float]$spec.metaFontSize, [System.Drawing.FontStyle]::Bold)
+    $noteFont = New-Object System.Drawing.Font([string]$spec.noteFontFamily, [float]$spec.noteFontSize, [System.Drawing.FontStyle]::Regular)
+    $qrPromptFont = New-Object System.Drawing.Font([string]$spec.metaFontFamily, [float]$spec.qrPromptFontSize, [System.Drawing.FontStyle]::Bold)
 
     $brandBrush = New-Object System.Drawing.SolidBrush($brand)
     $inkBrush = New-Object System.Drawing.SolidBrush($ink)
     $graphics.DrawString([string]$spec.category, $categoryFont, $brandBrush, [float]$spec.categoryX, [float]$spec.categoryY)
 
-    $titleRect = New-Object System.Drawing.RectangleF([float]$spec.titleX, [float]$spec.titleY, [float]$spec.titleWidth, 220.0)
-    $titleFormat = New-Object System.Drawing.StringFormat
-    $titleFormat.Trimming = [System.Drawing.StringTrimming]::EllipsisWord
-    $graphics.DrawString([string]$spec.title, $titleFont, $inkBrush, $titleRect, $titleFormat)
+    $titleY = [float]$spec.titleY
+    foreach ($titleLine in $titleLayout.Lines) {
+        $graphics.DrawString([string]$titleLine, $titleFont, $inkBrush, [float]$spec.titleX, $titleY)
+        $titleY += [float]$titleLayout.LineHeight
+    }
 
     $graphics.DrawString([string]$spec.metaLine, $metaFont, $inkBrush, [float]$spec.metaX, [float]$spec.metaY)
     if ([string]::IsNullOrWhiteSpace([string]$spec.noteLine) -eq $false) {
-        $noteBrush = New-Object System.Drawing.SolidBrush([System.Drawing.ColorTranslator]::FromHtml("#43514b"))
+        $noteBrush = New-Object System.Drawing.SolidBrush([System.Drawing.ColorTranslator]::FromHtml([string]$spec.noteColor))
         $graphics.DrawString([string]$spec.noteLine, $noteFont, $noteBrush, [float]$spec.noteX, [float]$spec.noteY)
         $noteBrush.Dispose()
     }
 
+    $qrPromptBrush = New-Object System.Drawing.SolidBrush([System.Drawing.ColorTranslator]::FromHtml("#6b4d3c"))
+    $graphics.DrawString([string]$spec.qrPrompt, $qrPromptFont, $qrPromptBrush, [float]$spec.qrX, [float]$spec.qrPromptY)
+    $qrPromptBrush.Dispose()
+
     $qrContainerBrush = New-Object System.Drawing.SolidBrush($white)
-    $graphics.FillRectangle($qrContainerBrush, ([int]$spec.qrX - 16), ([int]$spec.qrY - 16), ([int]$spec.qrSize + 32), ([int]$spec.qrSize + 32))
+    $graphics.FillRectangle(
+        $qrContainerBrush,
+        ([int]$spec.qrX - [int]$spec.qrContainerPadding),
+        ([int]$spec.qrY - [int]$spec.qrContainerPadding),
+        ([int]$spec.qrSize + ([int]$spec.qrContainerPadding * 2)),
+        ([int]$spec.qrSize + ([int]$spec.qrContainerPadding * 2))
+    )
     $qrContainerBrush.Dispose()
 
     $qrPath = [string]$spec.qrPath
@@ -104,9 +215,11 @@ try {
     $titleFont.Dispose()
     $metaFont.Dispose()
     $noteFont.Dispose()
+    $qrPromptFont.Dispose()
+    $categoryFontCollection.Dispose()
+    $titleFontCollection.Dispose()
     $brandBrush.Dispose()
     $inkBrush.Dispose()
-    $titleFormat.Dispose()
 } finally {
     $graphics.Dispose()
     $bitmap.Dispose()

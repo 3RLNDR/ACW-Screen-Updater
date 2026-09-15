@@ -1,6 +1,48 @@
 {
-  "windowLabel": "May-August 2026",
-  "selectedCount": 11,
-  "generatedCount": 22,
-  "warnings": []
+  "windowLabel": "June-September 2026",
+  "selectedCount": 10,
+  "generatedCount": 20,
+  "warnings": [],
+  "events": [
+    {
+      "title": "Song Sung Blue",
+      "date": "03 Jun 2026"
+    },
+    {
+      "title": "Sherlock Holmes and The Sting of the Scorpion",
+      "date": "04 Jun 2026"
+    },
+    {
+      "title": "Broken",
+      "date": "30 Apr - 06 Jun 2026"
+    },
+    {
+      "title": "Nat Hardy: ISM - Art with Heart",
+      "date": "08 May - 06 Jun 2026"
+    },
+    {
+      "title": "Heritage Reels: Iron Ladies",
+      "date": "10 Jun 2026"
+    },
+    {
+      "title": "A Good Company of Musick: Royal Northern Sinfonia with Ben Lunn",
+      "date": "17 Jun 2026"
+    },
+    {
+      "title": "H Is for Hawk",
+      "date": "01 Jul 2026"
+    },
+    {
+      "title": "Summer Craft & Makers Fair",
+      "date": "18 Jul 2026"
+    },
+    {
+      "title": "The NE Street Band",
+      "date": "24 Jul 2026"
+    },
+    {
+      "title": "Stronger Seams : Beyond Coal",
+      "date": "19 Jun - 25 Jul 2026"
+    }
+  ]
 }
