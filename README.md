@@ -95,7 +95,7 @@ The frontend supports a few useful query-string options:
 Defaults:
 
 - dashboard includes classes unless local storage says otherwise
-- fullscreen excludes classes unless `includeClasses=true` is supplied
+- fullscreen includes classes unless `includeClasses=false` is supplied
 - fullscreen theme defaults to `heritage`
 
 ## Data shape
@@ -143,7 +143,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\Start-AcwDisplay.ps1 -Port
 Then open:
 
 - `http://localhost:8080/`
-- `http://localhost:8080/fullscreen.html?includeClasses=false`
+- `http://localhost:8080/fullscreen.html?includeClasses=true`
 
 There is also a helper launcher:
 

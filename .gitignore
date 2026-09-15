@@ -4,6 +4,11 @@ backup-local-server/cache/
 server.log
 .DS_Store
 Thumbs.db
+__pycache__/
+.tmp/
+.superpowers/
+pytest-cache-files-*/
+tmp*/
 gitdata/
 .gitdata/
 .git-broken*/

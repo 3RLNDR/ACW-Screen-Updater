@@ -1,8 +1,9 @@
 const params = new URLSearchParams(window.location.search);
+const { buildFullscreenUrl, shouldIncludeClasses } = window.AcwDisplayOptions;
 const storedPreference = localStorage.getItem("includeClasses");
 const showRemoteImages = params.get("showImages") === "true";
 const defaultIncludeClasses = storedPreference === null
-  ? params.get("includeClasses") !== "false"
+  ? shouldIncludeClasses(params)
   : storedPreference === "true";
 const isFileProtocol = window.location.protocol === "file:";
 const isLocalServer = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
@@ -73,6 +74,7 @@ includeClassesToggle.checked = state.includeClasses;
 includeClassesToggle.addEventListener("change", () => {
   state.includeClasses = includeClassesToggle.checked;
   localStorage.setItem("includeClasses", String(state.includeClasses));
+  updateFullscreenLink();
   loadEvents();
 });
 
@@ -372,16 +374,18 @@ function renderViewModeOptions() {
 }
 
 function updateFullscreenLink() {
-  const eventsOnlyUrl = new URL("./fullscreen.html", window.location.href);
-  eventsOnlyUrl.searchParams.set("includeClasses", "false");
-  eventsOnlyUrl.searchParams.set("theme", state.fullscreenTheme);
-  fullscreenLink.href = eventsOnlyUrl.toString();
-  fullscreenUrlDisplay.href = eventsOnlyUrl.toString();
-  fullscreenUrlDisplay.textContent = eventsOnlyUrl.toString();
+  const primaryUrl = buildFullscreenUrl(window.location.href, {
+    includeClasses: state.includeClasses,
+    theme: state.fullscreenTheme
+  });
+  fullscreenLink.href = primaryUrl.toString();
+  fullscreenUrlDisplay.href = primaryUrl.toString();
+  fullscreenUrlDisplay.textContent = primaryUrl.toString();
 
-  const allItemsUrl = new URL("./fullscreen.html", window.location.href);
-  allItemsUrl.searchParams.set("includeClasses", "true");
-  allItemsUrl.searchParams.set("theme", state.fullscreenTheme);
+  const allItemsUrl = buildFullscreenUrl(window.location.href, {
+    includeClasses: true,
+    theme: state.fullscreenTheme
+  });
   fullscreenAllLink.href = allItemsUrl.toString();
 }
 

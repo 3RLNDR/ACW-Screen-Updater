@@ -1,9 +1,10 @@
 const params = new URLSearchParams(window.location.search);
+const { shouldIncludeClasses } = window.AcwDisplayOptions;
 const isFileProtocol = window.location.protocol === "file:";
 const isLocalServer = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 const forcedDataMode = document.body.dataset.displayMode;
 const dataMode = forcedDataMode || (isFileProtocol ? "preview" : (isLocalServer ? "server" : "static"));
-const includeClasses = params.get("includeClasses") === "true";
+const includeClasses = shouldIncludeClasses(params);
 const slideDelayMs = Math.max(5000, Number.parseInt(params.get("delay") || "15000", 10) || 15000);
 const keepAliveMs = Math.max(15000, Number.parseInt(params.get("keepAliveMs") || "30000", 10) || 30000);
 const apiOrigin = isLocalServer ? window.location.origin : "http://localhost:8080";
