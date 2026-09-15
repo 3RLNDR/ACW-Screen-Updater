@@ -1,7 +1,4 @@
-cache/
 public/cache/images/
-backup-local-server/cache/
-server.log
 .DS_Store
 Thumbs.db
 __pycache__/
@@ -12,3 +9,4 @@ tmp*/
 gitdata/
 .gitdata/
 .git-broken*/
+to-delete/

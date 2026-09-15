@@ -2,7 +2,7 @@
 
 This project includes a fullscreen preview page at `public/test-output.html`.
 
-Use it when you want to check the same fullscreen features as the live display without relying on live scraped data.
+Use it when you want to check the same fullscreen features as the display without relying on generated event data.
 
 ## Quickest option
 
@@ -26,14 +26,14 @@ Then open:
 
 This is useful if you want the preview page to behave more like the hosted/static site.
 
-## Live page vs test page
+## Display page vs test page
 
 - `public/test-output.html` is the fullscreen test preview
 - `public/index.html` is the dashboard/control page
-- `public/fullscreen.html` is the rotating live display page
+- `public/fullscreen.html` is the rotating display page
 
 ## Notes
 
-- The test page now reuses the same fullscreen markup and script as the live display.
+- The test page reuses the same fullscreen markup and script as the main display.
 - When opened directly from disk, it uses sample fallback content.
 - When served over HTTP, it can load `events.json` the same way as the live static site.

@@ -1,13 +1,11 @@
 const params = new URLSearchParams(window.location.search);
 const { shouldIncludeClasses } = window.AcwDisplayOptions;
 const isFileProtocol = window.location.protocol === "file:";
-const isLocalServer = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 const forcedDataMode = document.body.dataset.displayMode;
-const dataMode = forcedDataMode || (isFileProtocol ? "preview" : (isLocalServer ? "server" : "static"));
+const dataMode = forcedDataMode || (isFileProtocol ? "preview" : "static");
 const includeClasses = shouldIncludeClasses(params);
 const slideDelayMs = Math.max(5000, Number.parseInt(params.get("delay") || "15000", 10) || 15000);
 const keepAliveMs = Math.max(15000, Number.parseInt(params.get("keepAliveMs") || "30000", 10) || 30000);
-const apiOrigin = isLocalServer ? window.location.origin : "http://localhost:8080";
 const assetBase = window.location.href;
 const fullscreenThemeStorageKey = "fullscreenTheme";
 const fullscreenTheme = params.get("theme") || localStorage.getItem(fullscreenThemeStorageKey) || "heritage";
@@ -43,15 +41,6 @@ const slideProgress = document.querySelector("#slideProgress");
 const slideProgressBar = document.querySelector("#slideProgressBar");
 const keepAlivePulse = document.querySelector("#keepAlivePulse");
 const keepAliveVideo = document.querySelector("#keepAliveVideo");
-
-function buildApiUrl(force = false) {
-  const apiUrl = new URL("/api/events", apiOrigin);
-  apiUrl.searchParams.set("includeClasses", String(includeClasses));
-  if (force) {
-    apiUrl.searchParams.set("_", Date.now().toString());
-  }
-  return apiUrl.toString();
-}
 
 function buildStaticDataUrl(force = false) {
   const dataUrl = new URL("./events.json", window.location.href);
@@ -430,10 +419,7 @@ async function loadEvents(force = false) {
       throw new Error("Direct file mode");
     }
 
-    const response = await fetch(
-      dataMode === "server" ? buildApiUrl(force) : buildStaticDataUrl(force),
-      { cache: "no-store" }
-    );
+    const response = await fetch(buildStaticDataUrl(force), { cache: "no-store" });
     if (!response.ok) {
       throw new Error(`Request failed with ${response.status}`);
     }

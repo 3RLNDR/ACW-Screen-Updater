@@ -12,7 +12,7 @@
       <div>
         <p class="eyebrow">Arts Centre Washington</p>
         <h1>Upcoming events</h1>
-        <p class="subcopy">A live display view for the venue screen. Updates automatically and can hide classes and courses when needed.</p>
+        <p class="subcopy">A static display view for the venue screen. It reads generated event data and can hide classes and courses when needed.</p>
       </div>
       <div class="status-panel">
         <div>
@@ -50,13 +50,13 @@
         <span class="theme-picker-label">Fullscreen theme</span>
         <div id="themeOptions" class="theme-options"></div>
       </div>
-        <span class="hint">Tip: add <code>?includeClasses=false</code> for events only. On GitHub Pages this view reads from <code>events.json</code>; the original live PowerShell version is kept in <code>backup-local-server</code>.</span>
+        <span class="hint">Tip: add <code>?includeClasses=false</code> for events only. This view reads from the generated <code>events.json</code> file.</span>
     </section>
 
     <section class="board">
       <div class="page-meta">
         <div id="pageCounter">Page 1 of 1</div>
-        <div id="sourceStatus">Live from Sunderland Culture</div>
+        <div id="sourceStatus">Published event data</div>
       </div>
       <div id="eventsGrid" class="events-grid" aria-live="polite"></div>
     </section>

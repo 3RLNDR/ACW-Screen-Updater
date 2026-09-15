@@ -1,14 +1,11 @@
 const params = new URLSearchParams(window.location.search);
 const { buildFullscreenUrl, shouldIncludeClasses } = window.AcwDisplayOptions;
 const storedPreference = localStorage.getItem("includeClasses");
-const showRemoteImages = params.get("showImages") === "true";
 const defaultIncludeClasses = storedPreference === null
   ? shouldIncludeClasses(params)
   : storedPreference === "true";
 const isFileProtocol = window.location.protocol === "file:";
-const isLocalServer = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-const dataMode = isFileProtocol ? "preview" : (isLocalServer ? "server" : "static");
-const apiOrigin = isLocalServer ? window.location.origin : "http://localhost:8080";
+const dataMode = isFileProtocol ? "preview" : "static";
 const assetBase = window.location.href;
 const fullscreenThemeStorageKey = "fullscreenTheme";
 const viewModeStorageKey = "eventPreviewViewMode";
@@ -81,15 +78,6 @@ includeClassesToggle.addEventListener("change", () => {
 refreshButton.addEventListener("click", () => {
   loadEvents(true);
 });
-
-function buildApiUrl(force = false) {
-  const apiUrl = new URL("/api/events", apiOrigin);
-  apiUrl.searchParams.set("includeClasses", String(state.includeClasses));
-  if (force) {
-    apiUrl.searchParams.set("_", Date.now().toString());
-  }
-  return apiUrl.toString();
-}
 
 function buildStaticDataUrl(force = false) {
   const dataUrl = new URL("./events.json", window.location.href);
@@ -425,9 +413,7 @@ function renderPage() {
     link.href = item.link || "#";
     buildPoster(card, item);
 
-    const imageSource = normalizeAssetUrl(item.imageLocal)
-      || (showRemoteImages && item.image ? item.image : null)
-      || buildFallbackImage(item);
+    const imageSource = normalizeAssetUrl(item.imageLocal) || buildFallbackImage(item);
 
     if (imageSource) {
       image.hidden = false;
@@ -461,10 +447,7 @@ async function loadEvents(force = false) {
       throw new Error("Direct file mode");
     }
 
-    const response = await fetch(
-      dataMode === "server" ? buildApiUrl(force) : buildStaticDataUrl(force),
-      { cache: "no-store" }
-    );
+    const response = await fetch(buildStaticDataUrl(force), { cache: "no-store" });
     if (!response.ok) {
       let message = `Request failed with ${response.status}`;
       try {
@@ -481,9 +464,7 @@ async function loadEvents(force = false) {
     const payload = await response.json();
     renderPayload(
       payload,
-      dataMode === "static"
-        ? (payload.sourceUrl ? `Published from ${new URL(payload.sourceUrl).host}` : "Published site data")
-        : (payload.sourceUrl ? `Live from ${new URL(payload.sourceUrl).host}` : "Live data loaded")
+      payload.sourceUrl ? `Published from ${new URL(payload.sourceUrl).host}` : "Published site data"
     );
   } catch (error) {
     const fallbackItems = getFallbackItems().filter((item) => state.includeClasses || !item.isClass);
@@ -493,7 +474,7 @@ async function loadEvents(force = false) {
       items: fallbackItems
     }, dataMode === "preview"
       ? "Preview data loaded from local file"
-      : `Live feed unavailable (${error.message}), showing preview data`);
+      : `Published data unavailable (${error.message}), showing preview data`);
   }
 }
 

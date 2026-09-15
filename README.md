@@ -2,10 +2,7 @@
 
 This project powers an Arts Centre Washington event display.
 
-It supports two ways of running:
-
-- a static site in `public/` for GitHub Pages
-- a live local PowerShell server for a Windows display machine
+It runs as a static site from `public/`, suitable for GitHub Pages or any simple static web server.
 
 The display pulls event information from the Sunderland Culture "What's On" page for Arts Centre Washington, normalises the event data, and shows it in two browser views:
 
@@ -14,20 +11,12 @@ The display pulls event information from the Sunderland Culture "What's On" page
 
 ## What is in this repository
 
-The root project is now a hybrid working copy:
+The root project contains the static display and its data generator:
 
 - `scripts/Generate-StaticEvents.ps1` builds a static `public/events.json` file and downloads event artwork into `public/cache/images/`
-- `Start-AcwDisplay.ps1` runs a local HTTP server with a live `/api/events` endpoint and local image caching
 - `.github/workflows/deploy-pages.yml` publishes the `public/` folder to GitHub Pages
-- `backup-local-server/` keeps an older copy of the original local-server version as a fallback reference
-
-So this is not just a GitHub Pages project and not just a local server project. The root contains both flows.
 
 ## How the app works
-
-### Static mode
-
-This is the GitHub Pages-friendly path.
 
 1. GitHub Actions runs `scripts/Generate-StaticEvents.ps1`
 2. The script scrapes the Sunderland Culture Arts Centre Washington page
@@ -37,18 +26,6 @@ This is the GitHub Pages-friendly path.
 6. GitHub Pages serves the `public/` folder
 
 In this mode the frontend reads from `events.json`.
-
-### Live local mode
-
-This is the Windows display-machine path.
-
-1. `Start-AcwDisplay.ps1` starts a small local HTTP server on `http://localhost:8080`
-2. The server scrapes Sunderland Culture on demand
-3. Results are cached in memory for the configured refresh window
-4. Remote images are cached locally under `cache/images/`
-5. The frontend reads live data from `/api/events`
-
-In this mode the local server also serves the files in `public/`.
 
 ## Views
 
@@ -77,7 +54,7 @@ The page refreshes data every 5 minutes and also supports manual refresh.
 
 The default slide delay is 15 seconds, with a minimum allowed delay of 5 seconds.
 
-`public/test-output.html` is the static preview companion for layout checks and should be updated alongside visible UI changes to the live display.
+`public/test-output.html` is the static preview companion for layout checks and should be updated alongside visible UI changes to the display.
 
 ## URL options
 
@@ -90,7 +67,6 @@ The frontend supports a few useful query-string options:
 - `?theme=evergreen`
 - `?theme=spotlight`
 - `?delay=15000` sets the fullscreen slide duration in milliseconds
-- `?showImages=true` on the dashboard allows remote image URLs when available
 
 Defaults:
 
@@ -100,7 +76,7 @@ Defaults:
 
 ## Data shape
 
-Both the static generator and the live server produce the same general payload shape:
+The static generator produces this payload shape:
 
 - `fetchedAt`
 - `includeClasses`
@@ -125,33 +101,6 @@ Each event item includes fields such as:
 - `qrLocal`
 
 ## Running locally
-
-### Option 1: run the live local server
-
-From the project root:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\Start-AcwDisplay.ps1
-```
-
-Optional parameters:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\Start-AcwDisplay.ps1 -Port 8080 -RefreshMinutes 15
-```
-
-Then open:
-
-- `http://localhost:8080/`
-- `http://localhost:8080/fullscreen.html?includeClasses=true`
-
-There is also a helper launcher:
-
-- `Run-Live-Display.bat`
-
-The helper launcher resolves the project folder from its own location, so it can run from any checkout path.
-
-### Option 2: generate static data locally
 
 Run:
 
@@ -199,8 +148,6 @@ To use Pages:
 ## Key files
 
 - [README.md](README.md)
-- [Start-AcwDisplay.ps1](Start-AcwDisplay.ps1)
-- [Run-Live-Display.bat](Run-Live-Display.bat)
 - [scripts/Generate-StaticEvents.ps1](scripts/Generate-StaticEvents.ps1)
 - [public/index.html](public/index.html)
 - [public/app.js](public/app.js)
@@ -208,13 +155,9 @@ To use Pages:
 - [public/fullscreen.js](public/fullscreen.js)
 - [public/styles.css](public/styles.css)
 - [public/events.json](public/events.json)
-- [backup-local-server/](backup-local-server/)
 
 ## Notes and limitations
 
 - The scraper depends on the current HTML structure of the Sunderland Culture site. If that markup changes, parsing may need to be updated.
-- The static GitHub Pages version is not live in the server sense. It only updates when the generation workflow runs.
-- The live local server only supports `GET` requests.
-- The live server exposes `GET /api/events` and `GET /health`.
-- The live server stores its log in `server.log`.
+- The display only updates when the static generation workflow runs, or when `scripts/Generate-StaticEvents.ps1` is run locally.
 - Some older sample data in the frontend fallback arrays still contains mis-encoded pound signs (`Â£`), but the live/static data pipeline includes logic to normalise currency display.

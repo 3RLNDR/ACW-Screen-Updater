@@ -36,3 +36,13 @@ test("default fullscreen filtering keeps every event payload item", () => {
 
   assert.equal(visibleItems.length, payload.items.length);
 });
+
+test("frontend runtime no longer supports the deprecated local server API", () => {
+  const frontendSources = [
+    fs.readFileSync(new URL("../public/app.js", import.meta.url), "utf8"),
+    fs.readFileSync(new URL("../public/fullscreen.js", import.meta.url), "utf8")
+  ].join("\n");
+
+  assert.doesNotMatch(frontendSources, /\/api\/events/);
+  assert.doesNotMatch(frontendSources, /localhost:8080|isLocalServer|dataMode === "server"/);
+});
