@@ -33,6 +33,7 @@ const eventCount = document.querySelector("#eventCount");
 const pageCounter = document.querySelector("#pageCounter");
 const sourceStatus = document.querySelector("#sourceStatus");
 const eventsGrid = document.querySelector("#eventsGrid");
+const eventListHeader = document.querySelector("#eventListHeader");
 const template = document.querySelector("#eventCardTemplate");
 const fullscreenLink = document.querySelector("#fullscreenLink");
 const fullscreenAllLink = document.querySelector("#fullscreenAllLink");
@@ -339,6 +340,9 @@ function renderThemeOptions() {
 
 function applyViewMode() {
   eventsGrid.dataset.view = state.viewMode;
+  const isListView = state.viewMode === "list";
+  eventsGrid.setAttribute("role", "list");
+  eventListHeader.hidden = !isListView;
 }
 
 function renderViewModeOptions() {
@@ -398,6 +402,7 @@ function renderPage() {
     const card = fragment.querySelector(".event-card");
     const image = fragment.querySelector(".event-image");
     const category = fragment.querySelector(".event-category");
+    const inlineCategory = fragment.querySelector(".event-category-inline");
     const status = fragment.querySelector(".event-status");
     const title = fragment.querySelector(".event-title");
     const date = fragment.querySelector(".event-date");
@@ -405,6 +410,8 @@ function renderPage() {
     const link = fragment.querySelector(".event-link");
 
     category.textContent = item.category || "Event";
+    inlineCategory.textContent = item.category || "Event";
+    card.setAttribute("role", "listitem");
     title.textContent = item.title || "Untitled event";
     date.textContent = item.dateText || "Date to be confirmed";
     meta.textContent = Array.isArray(item.meta) ? item.meta.join(" | ") : "";

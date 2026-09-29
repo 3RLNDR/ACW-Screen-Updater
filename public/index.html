@@ -58,6 +58,13 @@
         <div id="pageCounter">Page 1 of 1</div>
         <div id="sourceStatus">Published event data</div>
       </div>
+      <div id="eventListHeader" class="event-list-header" aria-label="Event list columns" hidden>
+        <span>Event</span>
+        <span>Date</span>
+        <span>Details</span>
+        <span>Status</span>
+        <span class="event-list-action">Action</span>
+      </div>
       <div id="eventsGrid" class="events-grid" aria-live="polite"></div>
     </section>
   </main>
@@ -76,10 +83,13 @@
         <div class="event-category"></div>
       </div>
       <div class="event-body">
-        <div class="event-status"></div>
-        <h2 class="event-title"></h2>
+        <div class="event-name">
+          <h2 class="event-title"></h2>
+          <div class="event-category-inline"></div>
+        </div>
         <p class="event-date"></p>
         <p class="event-meta"></p>
+        <div class="event-status"></div>
         <a class="event-link" target="_blank" rel="noreferrer">View event</a>
       </div>
     </article>
