@@ -1,3 +1,5 @@
+import { buildStaticPlaylist } from "./slideshow-playlist.mjs";
+
 const params = new URLSearchParams(window.location.search);
 const { shouldIncludeClasses } = window.AcwDisplayOptions;
 const isFileProtocol = window.location.protocol === "file:";
@@ -25,6 +27,7 @@ const state = {
 
 const refreshMs = 5 * 60 * 1000;
 
+const slideVideo = document.querySelector("#slideVideo");
 const slideImage = document.querySelector("#slideImage");
 const slidePoster = document.querySelector("#slidePoster");
 const slideAvailability = document.querySelector("#slideAvailability");
@@ -44,6 +47,14 @@ const keepAliveVideo = document.querySelector("#keepAliveVideo");
 
 function buildStaticDataUrl(force = false) {
   const dataUrl = new URL("./events.json", window.location.href);
+  if (force) {
+    dataUrl.searchParams.set("_", Date.now().toString());
+  }
+  return dataUrl.toString();
+}
+
+function buildStaticVideoUrl(force = false) {
+  const dataUrl = new URL("./videos.json", window.location.href);
   if (force) {
     dataUrl.searchParams.set("_", Date.now().toString());
   }
@@ -328,7 +339,7 @@ function fitTitleToFiveLines() {
   }
 }
 
-function restartProgressBar() {
+function restartProgressBar(durationMs = slideDelayMs) {
   if (!slideProgress || !slideProgressBar) {
     return;
   }
@@ -347,22 +358,47 @@ function restartProgressBar() {
 
   state.progressTimer = setInterval(() => {
     const elapsed = Date.now() - state.progressStartedAt;
-    const progress = Math.max(2, Math.min(100, (elapsed / slideDelayMs) * 100));
+    const progress = Math.max(2, Math.min(100, (elapsed / durationMs) * 100));
     slideProgressBar.style.width = `${progress}%`;
   }, 100);
 }
 
-function renderSlide(index) {
-  if (!state.items.length) {
+function stopVideoSlide() {
+  if (!slideVideo) {
     return;
   }
 
-  state.currentIndex = index;
-  const item = state.items[index];
+  slideVideo.pause();
+  slideVideo.onended = null;
+  slideVideo.onerror = null;
+  slideVideo.removeAttribute("src");
+  slideVideo.load();
+}
+
+function scheduleAdvance(durationMs) {
+  clearTimeout(state.rotateTimer);
+  restartProgressBar(durationMs);
+  if (state.items.length <= 1) {
+    return;
+  }
+
+  state.rotateTimer = setTimeout(() => {
+    const nextIndex = (state.currentIndex + 1) % state.items.length;
+    renderSlide(nextIndex);
+  }, durationMs);
+}
+
+function renderEventSlide(index, item) {
+  document.body.setAttribute("data-slide-type", "event");
+  stopVideoSlide();
   const imageSource = normalizeAssetUrl(item.imageLocal) || buildFallbackImage(item);
   const theme = getTheme(item.category, item.isClass);
 
+  if (slideVideo) {
+    slideVideo.hidden = true;
+  }
   slidePoster.style.background = `linear-gradient(135deg, ${theme.start}, ${theme.end})`;
+  slidePoster.hidden = false;
   slideImage.hidden = false;
   slideImage.src = imageSource;
   slideImage.alt = item.title || "Event artwork";
@@ -390,27 +426,80 @@ function renderSlide(index) {
   });
   updateQrPanel(item);
   slideCounter.textContent = `${index + 1} / ${state.items.length}`;
-  restartProgressBar();
+  scheduleAdvance(slideDelayMs);
   requestAnimationFrame(() => fitTitleToFiveLines());
 }
 
-function startRotation() {
-  clearInterval(state.rotateTimer);
-  if (state.items.length <= 1) {
+function renderVideoSlide(index, item) {
+  if (!slideVideo) {
+    renderSlide((index + 1) % state.items.length);
     return;
   }
 
-  state.rotateTimer = setInterval(() => {
-    const nextIndex = (state.currentIndex + 1) % state.items.length;
-    renderSlide(nextIndex);
-  }, slideDelayMs);
+  const videoUrl = normalizeAssetUrl(item.src);
+  if (!videoUrl) {
+    renderSlide((index + 1) % state.items.length);
+    return;
+  }
+
+  document.body.setAttribute("data-slide-type", "video");
+  slideImage.hidden = true;
+  slideImage.removeAttribute("src");
+  slidePoster.hidden = true;
+  slideVideo.hidden = false;
+  slideAvailability.hidden = true;
+  slideQrPanel.hidden = true;
+  slideQrPanel.dataset.qrStatus = "hidden";
+  slideCategory.textContent = "Video";
+  slideTitle.textContent = item.title || "Video";
+  slideDate.textContent = "Playing now";
+  if (slideDateNote) {
+    slideDateNote.hidden = true;
+    slideDateNote.textContent = "";
+  }
+  slideDetails.innerHTML = "";
+  const detail = document.createElement("span");
+  detail.className = "fullscreen-detail-pill";
+  detail.textContent = "Video";
+  slideDetails.appendChild(detail);
+  slideCounter.textContent = `${index + 1} / ${state.items.length}`;
+  requestAnimationFrame(() => fitTitleToFiveLines());
+
+  slideVideo.muted = false;
+  slideVideo.volume = 1;
+  slideVideo.src = videoUrl;
+  slideVideo.onended = () => renderSlide((state.currentIndex + 1) % state.items.length);
+  slideVideo.onerror = () => renderSlide((state.currentIndex + 1) % state.items.length);
+  slideVideo.play().catch(() => {
+    renderSlide((state.currentIndex + 1) % state.items.length);
+  });
+
+  const durationMs = Math.max(5000, (Number(item.durationSeconds) || 30) * 1000);
+  scheduleAdvance(durationMs);
 }
 
-function renderPayload(payload) {
-  const payloadItems = Array.isArray(payload.items) ? payload.items : [];
-  state.items = payloadItems.filter((item) => includeClasses || !item.isClass);
+function renderSlide(index) {
+  if (!state.items.length) {
+    return;
+  }
+
+  state.currentIndex = index;
+  const item = state.items[index];
+
+  if (item.type === "video") {
+    renderVideoSlide(index, item);
+    return;
+  }
+
+  renderEventSlide(index, item);
+}
+
+function renderPayload(eventsPayload, videosPayload = { videos: [] }) {
+  state.items = buildStaticPlaylist(eventsPayload, videosPayload, includeClasses);
+  if (!state.items.length) {
+    state.items = buildStaticPlaylist({ items: getFallbackItems() }, { videos: [] }, true);
+  }
   renderSlide(0);
-  startRotation();
 }
 
 async function loadEvents(force = false) {
@@ -424,8 +513,17 @@ async function loadEvents(force = false) {
       throw new Error(`Request failed with ${response.status}`);
     }
 
-    const payload = await response.json();
-    renderPayload(payload);
+    const eventsPayload = await response.json();
+    let videosPayload = { videos: [] };
+    try {
+      const videosResponse = await fetch(buildStaticVideoUrl(force), { cache: "no-store" });
+      if (videosResponse.ok) {
+        videosPayload = await videosResponse.json();
+      }
+    } catch {
+      videosPayload = { videos: [] };
+    }
+    renderPayload(eventsPayload, videosPayload);
   } catch (error) {
     renderPayload({
       fetchedAt: null,

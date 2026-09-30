@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trailer Flow Preview</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    .stage {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+    }
+
+    .preview-slide,
+    video,
+    .start-overlay {
+      position: absolute;
+      inset: 0;
+    }
+
+    .preview-slide {
+      display: grid;
+      place-items: center;
+      padding: 6vw;
+      background:
+        linear-gradient(135deg, rgba(177, 75, 45, 0.9), rgba(24, 64, 75, 0.92)),
+        #1c2522;
+    }
+
+    .preview-slide[hidden],
+    video[hidden],
+    .start-overlay[hidden] {
+      display: none;
+    }
+
+    .slide-copy {
+      display: grid;
+      gap: 1.2rem;
+      max-width: 70rem;
+      text-align: center;
+    }
+
+    .eyebrow {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: clamp(1rem, 1.8vw, 1.4rem);
+      font-weight: 800;
+      opacity: 0.86;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(4rem, 8vw, 9rem);
+      line-height: 0.92;
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .detail {
+      margin: 0;
+      font-size: clamp(1.4rem, 2.6vw, 2.8rem);
+      font-weight: 700;
+      opacity: 0.9;
+    }
+
+    video {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      object-fit: contain;
+    }
+
+    .start-overlay {
+      display: grid;
+      place-items: center;
+      background: rgba(0, 0, 0, 0.72);
+      z-index: 3;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 1rem 1.6rem;
+      background: #fff;
+      color: #111;
+      font: inherit;
+      font-size: 1.2rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main class="stage" aria-label="Trailer flow preview">
+    <section id="previewSlide" class="preview-slide" aria-label="Preview slide">
+      <div class="slide-copy">
+        <p class="eyebrow">Arts Centre Washington</p>
+        <h1>Trailer Test</h1>
+        <p class="detail">This slide should hand over to the trailer.</p>
+      </div>
+    </section>
+
+    <video
+      id="previewVideo"
+      src="cache/videos/trailer.mp4"
+      controls
+      playsinline
+      preload="auto"
+      hidden
+    ></video>
+
+    <div id="startOverlay" class="start-overlay">
+      <button id="startButton" type="button">Start slideshow test</button>
+    </div>
+  </main>
+
+  <script>
+    const slideDurationMs = 4000;
+    const previewSlide = document.querySelector("#previewSlide");
+    const previewVideo = document.querySelector("#previewVideo");
+    const startOverlay = document.querySelector("#startOverlay");
+    const startButton = document.querySelector("#startButton");
+    let slideTimer = null;
+
+    function showSlide() {
+      clearTimeout(slideTimer);
+      previewVideo.pause();
+      previewVideo.hidden = true;
+      previewSlide.hidden = false;
+      slideTimer = setTimeout(showVideo, slideDurationMs);
+    }
+
+    function showVideo() {
+      clearTimeout(slideTimer);
+      previewSlide.hidden = true;
+      previewVideo.hidden = false;
+      previewVideo.muted = false;
+      previewVideo.volume = 1;
+      previewVideo.currentTime = 0;
+      previewVideo.play().catch(() => {
+        previewVideo.controls = true;
+      });
+    }
+
+    function startPreview() {
+      startOverlay.hidden = true;
+      showSlide();
+    }
+
+    previewVideo.addEventListener("ended", showSlide);
+    startButton.addEventListener("click", startPreview);
+  </script>
+</body>
+</html>

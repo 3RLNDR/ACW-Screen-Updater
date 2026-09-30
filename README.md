@@ -100,6 +100,32 @@ Each event item includes fields such as:
 - `imageLocal`
 - `qrLocal`
 
+## Static video playlist
+
+Promo videos can be played at the end of the fullscreen slideshow without a server or third-party video host.
+
+Add compressed MP4 files to:
+
+```text
+public/cache/videos/
+```
+
+Then list them in [public/videos.json](public/videos.json):
+
+```json
+{
+  "videos": [
+    {
+      "title": "Season Trailer",
+      "src": "cache/videos/season-trailer.mp4",
+      "durationSeconds": 30
+    }
+  ]
+}
+```
+
+The fullscreen view shows all visible event slides first, then each configured video, then loops back to the first event. Keep videos short and compressed; this repo-hosted approach is intended for a small number of venue promo clips, not a large video library.
+
 ## Running locally
 
 Run:
@@ -112,6 +138,7 @@ This writes:
 
 - `public/events.json`
 - `public/cache/images/*`
+- `public/cache/qr/*`
 
 Then serve `public/` through any local web server.
 
@@ -155,9 +182,11 @@ To use Pages:
 - [public/fullscreen.js](public/fullscreen.js)
 - [public/styles.css](public/styles.css)
 - [public/events.json](public/events.json)
+- [public/videos.json](public/videos.json)
 
 ## Notes and limitations
 
 - The scraper depends on the current HTML structure of the Sunderland Culture site. If that markup changes, parsing may need to be updated.
 - The display only updates when the static generation workflow runs, or when `scripts/Generate-StaticEvents.ps1` is run locally.
+- Video playlist updates require committing the MP4 file and [public/videos.json](public/videos.json), then letting GitHub Pages redeploy.
 - Some older sample data in the frontend fallback arrays still contains mis-encoded pound signs (`Â£`), but the live/static data pipeline includes logic to normalise currency display.

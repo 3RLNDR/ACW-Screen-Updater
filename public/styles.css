@@ -748,7 +748,8 @@ code {
 }
 
 .fullscreen-poster,
-.fullscreen-image {
+.fullscreen-image,
+.fullscreen-video {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -763,6 +764,43 @@ code {
 .fullscreen-image {
   object-fit: cover;
   z-index: 1;
+}
+
+.fullscreen-video {
+  object-fit: cover;
+  z-index: 2;
+  background: #000;
+}
+
+.fullscreen-body[data-slide-type="video"] {
+  background: #000;
+}
+
+.fullscreen-body[data-slide-type="video"] .fullscreen-screen {
+  padding: 0;
+}
+
+.fullscreen-body[data-slide-type="video"] .fullscreen-stage {
+  min-height: 100vh;
+  grid-template-columns: 1fr;
+  gap: 0;
+  background: #000;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.fullscreen-body[data-slide-type="video"] .fullscreen-media {
+  min-height: 100vh;
+  background: #000;
+}
+
+.fullscreen-body[data-slide-type="video"] .fullscreen-video {
+  object-fit: contain;
+}
+
+.fullscreen-body[data-slide-type="video"] .fullscreen-content {
+  display: none;
 }
 
 .fullscreen-availability {

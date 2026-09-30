@@ -1,0 +1,9 @@
+{
+  "videos": [
+    {
+      "title": "Trailer",
+      "src": "cache/videos/trailer.mp4",
+      "durationSeconds": 120
+    }
+  ]
+}
