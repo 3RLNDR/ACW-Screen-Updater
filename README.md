@@ -110,7 +110,7 @@ Add compressed MP4 files to:
 public/cache/videos/
 ```
 
-Then list them in [public/content-data.json](public/content-data.json):
+Then list them in [public/screen-config.txt](public/screen-config.txt):
 
 ```json
 {
@@ -182,11 +182,11 @@ To use Pages:
 - [public/fullscreen.js](public/fullscreen.js)
 - [public/styles.css](public/styles.css)
 - [public/events.json](public/events.json)
-- [public/content-data.json](public/content-data.json)
+- [public/screen-config.txt](public/screen-config.txt)
 
 ## Notes and limitations
 
 - The scraper depends on the current HTML structure of the Sunderland Culture site. If that markup changes, parsing may need to be updated.
 - The display only updates when the static generation workflow runs, or when `scripts/Generate-StaticEvents.ps1` is run locally.
-- Video playlist updates require committing the MP4 file and [public/content-data.json](public/content-data.json), then letting GitHub Pages redeploy.
+- Video playlist updates require committing the MP4 file and [public/screen-config.txt](public/screen-config.txt), then letting GitHub Pages redeploy.
 - Some older sample data in the frontend fallback arrays still contains mis-encoded pound signs (`Â£`), but the live/static data pipeline includes logic to normalise currency display.

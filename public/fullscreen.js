@@ -54,7 +54,7 @@ function buildStaticDataUrl(force = false) {
 }
 
 function buildStaticVideoUrl(force = false) {
-  const dataUrl = new URL("./content-data.json", window.location.href);
+  const dataUrl = new URL("./screen-config.txt", window.location.href);
   if (force) {
     dataUrl.searchParams.set("_", Date.now().toString());
   }

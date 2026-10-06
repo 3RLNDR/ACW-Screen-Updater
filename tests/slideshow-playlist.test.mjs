@@ -66,9 +66,9 @@ test("fullscreen runtime is wired for the static video playlist", () => {
   const source = fs.readFileSync(new URL("../public/fullscreen.js", import.meta.url), "utf8");
 
   assert.match(html, /id="slideVideo"/);
-  assert.match(html, /type="module" src="\.\/fullscreen\.js\?v=20261006b"/);
-  assert.match(source, /content-data\.json/);
-  assert.doesNotMatch(source, /playlist-manifest\.json|videos\.json/);
+  assert.match(html, /type="module" src="\.\/fullscreen\.js\?v=20261006c"/);
+  assert.match(source, /screen-config\.txt/);
+  assert.doesNotMatch(source, /content-data\.json|playlist-manifest\.json|videos\.json/);
   assert.match(source, /renderVideoSlide/);
 });
 
@@ -100,7 +100,7 @@ test("test output page keeps the slide video aligned with fullscreen markup", ()
 
   assert.notEqual(slideVideoIdIndex, -1);
   assert.doesNotMatch(slideVideoMarkup, /\s muted(?:\s|>)/);
-  assert.match(html, /type="module" src="\.\/fullscreen\.js\?v=20261006b"/);
+  assert.match(html, /type="module" src="\.\/fullscreen\.js\?v=20261006c"/);
 });
 
 test("trailer preview page shows only the configured trailer video", () => {
