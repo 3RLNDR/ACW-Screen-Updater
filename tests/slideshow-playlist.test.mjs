@@ -67,7 +67,8 @@ test("fullscreen runtime is wired for the static video playlist", () => {
 
   assert.match(html, /id="slideVideo"/);
   assert.match(html, /type="module" src="\.\/fullscreen\.js"/);
-  assert.match(source, /videos\.json/);
+  assert.match(source, /playlist-manifest\.json/);
+  assert.doesNotMatch(source, /videos\.json/);
   assert.match(source, /renderVideoSlide/);
 });
 

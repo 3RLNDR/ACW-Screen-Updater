@@ -54,7 +54,7 @@ function buildStaticDataUrl(force = false) {
 }
 
 function buildStaticVideoUrl(force = false) {
-  const dataUrl = new URL("./videos.json", window.location.href);
+  const dataUrl = new URL("./playlist-manifest.json", window.location.href);
   if (force) {
     dataUrl.searchParams.set("_", Date.now().toString());
   }
