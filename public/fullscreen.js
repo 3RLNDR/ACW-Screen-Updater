@@ -1,4 +1,4 @@
-import { buildStaticPlaylist } from "./slideshow-playlist.mjs";
+import { buildStaticPlaylist, findSlideIndex } from "./slideshow-playlist.mjs";
 
 const params = new URLSearchParams(window.location.search);
 const { shouldIncludeClasses } = window.AcwDisplayOptions;
@@ -495,11 +495,12 @@ function renderSlide(index) {
 }
 
 function renderPayload(eventsPayload, videosPayload = { videos: [] }) {
+  const currentSlide = state.items[state.currentIndex];
   state.items = buildStaticPlaylist(eventsPayload, videosPayload, includeClasses);
   if (!state.items.length) {
     state.items = buildStaticPlaylist({ items: getFallbackItems() }, { videos: [] }, true);
   }
-  renderSlide(0);
+  renderSlide(Math.max(0, findSlideIndex(state.items, currentSlide)));
 }
 
 async function loadEvents(force = false) {

@@ -18,3 +18,18 @@ export function buildStaticPlaylist(eventsPayload, videosPayload, includeClasses
 
   return [...eventSlides, ...videoSlides];
 }
+
+export function findSlideIndex(items, currentSlide) {
+  if (!currentSlide) {
+    return -1;
+  }
+
+  const key = currentSlide.type === "video" ? currentSlide.id : currentSlide.link;
+  if (!key) {
+    return -1;
+  }
+
+  return items.findIndex((item) =>
+    item.type === currentSlide.type && (item.type === "video" ? item.id : item.link) === key
+  );
+}

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-import { buildStaticPlaylist } from "../public/slideshow-playlist.mjs";
+import { buildStaticPlaylist, findSlideIndex } from "../public/slideshow-playlist.mjs";
 
 test("buildStaticPlaylist appends configured videos after visible events", () => {
   const playlist = buildStaticPlaylist(
@@ -44,6 +44,21 @@ test("buildStaticPlaylist ignores video entries without a source", () => {
     playlist.map((slide) => slide.type),
     ["event"]
   );
+});
+
+test("findSlideIndex keeps the current event after refreshed events are reordered", () => {
+  const currentSlide = {
+    type: "event",
+    title: "Event 31",
+    link: "https://example.test/events/31"
+  };
+  const refreshedPlaylist = [
+    { type: "event", title: "New event", link: "https://example.test/events/new" },
+    { type: "event", title: "Event 31, updated", link: "https://example.test/events/31" },
+    { type: "event", title: "Later event", link: "https://example.test/events/later" }
+  ];
+
+  assert.equal(findSlideIndex(refreshedPlaylist, currentSlide), 1);
 });
 
 test("fullscreen runtime is wired for the static video playlist", () => {
