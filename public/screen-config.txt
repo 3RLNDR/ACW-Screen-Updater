@@ -2,7 +2,7 @@
   "videos": [
     {
       "title": "Trailer",
-      "src": "cache/videos/trailer.mp4",
+      "src": "cache/videos/trailer.mp4?v=pi3-720p-20261021",
       "durationSeconds": 120
     }
   ]

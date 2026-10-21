@@ -106,7 +106,8 @@ test("test output page keeps the slide video aligned with fullscreen markup", ()
 test("trailer preview page shows only the configured trailer video", () => {
   const html = fs.readFileSync(new URL("../public/trailer-preview.html", import.meta.url), "utf8");
 
-  assert.match(html, /src="cache\/videos\/trailer\.mp4"/);
+  const config = JSON.parse(fs.readFileSync(new URL("../public/screen-config.txt", import.meta.url), "utf8"));
+  assert.ok(html.includes(`src="${config.videos[0].src}"`));
   assert.match(html, /object-fit: contain/);
   assert.doesNotMatch(html, /fullscreen-content|slideTitle|slideDetails/);
 });
@@ -116,7 +117,8 @@ test("trailer flow preview shows one slide before the trailer", () => {
 
   assert.match(html, /id="previewSlide"/);
   assert.match(html, /id="previewVideo"/);
-  assert.match(html, /src="cache\/videos\/trailer\.mp4"/);
+  const config = JSON.parse(fs.readFileSync(new URL("../public/screen-config.txt", import.meta.url), "utf8"));
+  assert.ok(html.includes(`src="${config.videos[0].src}"`));
   assert.match(html, /setTimeout\(showVideo, slideDurationMs\)/);
   assert.match(html, /previewVideo\.muted = false/);
   assert.match(html, /previewVideo\.addEventListener\("ended", showSlide\)/);
